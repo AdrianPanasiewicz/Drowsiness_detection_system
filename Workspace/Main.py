@@ -8,17 +8,24 @@ temp = pathlib.PosixPath
 pathlib.PosixPath = pathlib.WindowsPath
 
 # Load model
-drowsiness_model = load_learner(r'C:\Users\adria\PycharmProjects\Real-time-drowsiness-and-emotion-detection\Models\Drowsiness_model.pkl')
+drowsiness_model = load_learner(
+    r'C:\Users\adria\PycharmProjects\Real-time-drowsiness-and-emotion-detection\Models\Drowsiness_model.pkl')
 
 # Initialise camera for video capture
 camera = cv2.VideoCapture(0)
 ret, frame = camera.read()
 
+# Main loop
 while ret:
+    # Read a frame from video and predict drowsiness
     ret, frame = camera.read()
-    cv2.imshow('Drowsiness detection', frame)
     output = drowsiness_model.predict(frame)
+
     print(output)
+
+    # Display the results on the frame
+    cv2.putText(frame, output[0], (10, frame.shape[0] - 20), cv2.FONT_HERSHEY_DUPLEX, 3, [17, 163, 252], 4)
+    cv2.imshow('Drowsiness detection', frame)
     k = cv2.waitKey(10)
 
 camera.release()
