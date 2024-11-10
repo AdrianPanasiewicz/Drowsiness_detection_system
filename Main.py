@@ -21,7 +21,7 @@ camera = cv2.VideoCapture(0)
 
 while true:
     ret, frame = camera.read()
-    processed_frame = image_processor.adjust_image(frame, *crop_size)
+    processed_frame = image_processor.preprocess_image(frame, *crop_size)
     cv2.imshow('Drowsiness detection', processed_frame)
     k = cv2.waitKey(20)
 
