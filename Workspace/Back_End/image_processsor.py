@@ -2,6 +2,9 @@ from fastai.vision.all import *
 import cv2
 
 class ImageProcessor:
+    """
+    Klasa odpowiedzialna za wstępne przetwarzanie obrazu.
+    """
     def __init__(self):
 
         self._original_image = None
@@ -26,7 +29,6 @@ class ImageProcessor:
         :param crop_height: Wysokość, z którą ma być wykonana operacja crop
         :type crop_width: int
         """
-
         # Uzyskanie wymiarów obrazu
         x_size = self._original_image.shape[0]
         y_size = self._original_image.shape[1]
