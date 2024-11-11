@@ -18,6 +18,7 @@ crop_size = (224,224)
 
 file_loader = FileLoader()
 
+
 # Load model
 emotion_model = load_learner(
     r'C:\Users\adria\PycharmProjects\Real-time-drowsiness-and-emotion-detection\Workspace\Resources\Models\Emotion_Model.pkl')
