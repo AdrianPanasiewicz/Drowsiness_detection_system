@@ -1,7 +1,10 @@
 import os
 import pathlib
 
-class FileLoader:
+import fastai.vision.all
+
+
+class ModelLoader:
     """
     Klasa odpowiedzialna za wczytywanie modeli do programu.
     """
@@ -10,7 +13,7 @@ class FileLoader:
 
     def __init__(self):
         """
-        Domyślny bezparametrowy konstruktor klasy FileLoader
+        Domyślny bezparametrowy konstruktor klasy ModelLoader
         """
         self.model_paths =  dict()
 
@@ -23,7 +26,7 @@ class FileLoader:
             self.model_paths.update({filename[:-4] : _model_full_path})
 
 
-    def load_model_from_relative_path(self, relative_path: str):
+    def save_model_path_from_relative_path(self, relative_path: str):
         """
         Metoda, która pozwala na załadowanie modelu ze względnej ścieżki
 
@@ -39,7 +42,7 @@ class FileLoader:
         filename = os.path.basename(_model_full_path)
         self.model_paths.update({filename[:-4] : _model_full_path})
 
-    def load_model_from_absolute_path(self, absolute_path):
+    def save_model_path_from_absolute_path(self, absolute_path):
         """
         Metoda, która pozwala na załadowanie modelu z bezwzględnej ścieżki
 
@@ -51,3 +54,16 @@ class FileLoader:
 
         filename = os.path.basename(_model_full_path)
         self.model_paths.update({filename[:-4] : _model_full_path})
+
+    def load_models(self) -> dict:
+        """
+
+        :return:
+        :rtype: tuple
+        """
+        loaded_models = dict()
+
+        for model_name,model_path in self.model_paths.items():
+            loaded_models.update({model_name : fastai.vision.all.load_learner(model_path)})
+
+        return loaded_models
