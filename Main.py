@@ -20,7 +20,15 @@ if __name__ == "__main__":
     model_loader = ModelLoader()
     models = model_loader.load_models()
     # Initialise camera for video capture
-    camera = cv2.VideoCapture(0)
+
+    try:
+        camera = cv2.VideoCapture(0)
+        if camera is None or not camera.isOpened():
+            raise TypeError
+
+    except TypeError as e:
+        raise TypeError('Nie udało się uzyskać dostępu do kamery lub kamera nie istnieje') from e
+
 
     while True:
         start_tick = time.process_time()
