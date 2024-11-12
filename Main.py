@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # Initialise camera for video capture
     camera = cv2.VideoCapture(0)
 
-    while true:
+    while True:
         start_tick = time.process_time()
         ret, frame = camera.read()
         processed_frame = image_processor.preprocess_image(frame, *crop_size)
@@ -34,5 +34,3 @@ if __name__ == "__main__":
         k = cv2.waitKey(5)
 
 
-    camera.release()
-    cv2.destroyAllWindows()
