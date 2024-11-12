@@ -39,6 +39,10 @@ if __name__ == "__main__":
         cv2.imshow('Drowsiness detection', processed_frame)
         stop_tick = time.process_time()
         print(stop_tick - start_tick)
-        k = cv2.waitKey(5)
+        if cv2.waitKey(34) & 0xFF == ord('q'):
+            break
+
+    camera.release()
+    cv2.destroyAllWindows()
 
 
