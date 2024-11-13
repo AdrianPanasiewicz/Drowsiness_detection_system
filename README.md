@@ -51,8 +51,8 @@ This project aims to develop a real-time system that detects drowsiness and emot
 - **/Front_End**: GUI responsible for showcasing the results
 
 ## Examples
-! [Drowsiness Detection Example](examples/drowsiness_example.jpg)
-! [Emotion Detection Example](examples/emotion_example.jpg)
+![Drowsiness Detection Example](examples/drowsiness_example.jpg)
+![Emotion Detection Example](examples/emotion_example.jpg)
 
 ## Contributing
 Feel free to open issues or pull requests. Contributions are welcome to improve detection accuracy, add new features, and optimize performance.
