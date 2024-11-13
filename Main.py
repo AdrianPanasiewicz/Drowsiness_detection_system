@@ -2,10 +2,11 @@ import pathlib
 import time
 
 from fastai.vision.all import *
+import mediapipe as mp
 import cv2
 
-from Workspace.Back_End.image_processsor import ImageProcessor
-from Workspace.Back_End.model_loader import ModelLoader
+
+from Workspace import *
 
 if __name__ == "__main__":
     # A work-around for the error that PosixPath cannot be instantiated on your system
@@ -29,17 +30,23 @@ if __name__ == "__main__":
     except TypeError as e:
         raise TypeError('Nie udało się uzyskać dostępu do kamery lub kamera nie istnieje') from e
 
+    past_tick = 0
 
     while True:
-        start_tick = time.process_time()
+        fps = Utils.calculate_fps()
+
         ret, frame = camera.read()
         processed_frame = image_processor.preprocess_image(frame, *crop_size)
-        output = models["Emotion_model"].predict(processed_frame)
-        cv2.putText(processed_frame, output[0], (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
-        cv2.imshow('Drowsiness detection', processed_frame)
+
+        # output = models["Emotion_model"].predict(processed_frame)
+        # cv2.putText(processed_frame, fps, (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+
+
+        cv2.imshow('Emotion detection', processed_frame)
         stop_tick = time.process_time()
-        print(stop_tick - start_tick)
-        if cv2.waitKey(34) & 0xFF == ord('q'):
+        print(fps)
+
+        if cv2.waitKey(10) & 0xFF == ord('q'):
             break
 
     camera.release()
