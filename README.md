@@ -45,10 +45,11 @@ This project aims to develop a real-time system that detects drowsiness and emot
 ## Project Structure
 - **main.py**: Main script to initialize and run the detection system.
 - **config.yaml**: Configuration file for camera settings, alert thresholds, and system options.
-- **/Resources**: Contains pre-trained models for emotion detection.
-- **/Utilities**: Helper functions for data processing and logging.
 - **/Back_End**: Classes for managing the flow and processing of information.
 - **/Front_End**: GUI responsible for showcasing the results
+- **/Resources**: Contains pre-trained models for emotion detection.
+- **/Utilities**: Helper functions for data processing and logging.
+
 
 ## Examples
 ![Drowsiness Detection Example](examples/drowsiness_example.jpg)
