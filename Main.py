@@ -9,10 +9,8 @@ import cv2
 from Workspace import *
 
 if __name__ == "__main__":
-    # A work-around for the error that PosixPath cannot be instantiated on your system
-    # More about this issue on https://github.com/ultralytics/yolov5/issues/10240
-    temp = pathlib.PosixPath
-    pathlib.PosixPath = pathlib.WindowsPath
+
+    pathlib.PosixPath = Utils.fix_pathlib()
 
     # Załadowanie klasy ImageProcessor do przetwarzania obrazu
     image_processor = ImageProcessor()
@@ -36,12 +34,14 @@ if __name__ == "__main__":
         fps = Utils.calculate_fps()
 
         ret, frame = camera.read()
-        processed_frame = image_processor.preprocess_image(frame, *crop_size)
-
-        # output = models["Emotion_model"].predict(processed_frame)
-        # cv2.putText(processed_frame, fps, (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+        processed_frame_MM = image_processor.preprocess_image1(frame, *crop_size)
+        processed_frame = image_processor.preprocess_image2(frame)
 
 
+        # Otrzymanie wyniku predykcji modeli zabiera aż 20 fps-ów
+        output = models["Emotion_model"].predict(processed_frame_MM)
+        cv2.putText(processed_frame, output[0], (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+        cv2.putText(processed_frame, f"FPS: {int(fps)}", (20, 60), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
         cv2.imshow('Emotion detection', processed_frame)
         stop_tick = time.process_time()
         print(fps)
