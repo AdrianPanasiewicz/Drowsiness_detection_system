@@ -8,35 +8,29 @@ class ImageProcessor:
     """
     def __init__(self):
 
-        self._original_image = None
-        self._processed_image = None
         self._mpDraw = solutions.drawing_utils
         self._mpFaceMesh = solutions.face_mesh
         self._faceMesh = self._mpFaceMesh.FaceMesh()
         self._drawSpec = self._mpDraw.DrawingSpec(thickness=1, circle_radius=1, color = (0, 0, 255))
 
-    def _load_image(self, image):
-        """
-        Metoda do zapisywania obrazu do klasy
 
-        :param image: Obraz, który będzie przetworzony
-        :type image: Union z OpenCV
-        """
-
-        self._original_image = image
-
-    def _crop_image(self, crop_width: int, crop_height: int):
+    @staticmethod
+    def _crop_image(image, crop_width: int, crop_height: int):
         """
         Metoda do wykonania operacji crop na obrazie zapisanym w klasie
 
+        :param image: Obraz, który będzie przetworzony
+        :type image: Union z OpenCV
         :param crop_width: Szerokość, z którą ma być wykonana operacja crop
         :type crop_width: int
         :param crop_height: Wysokość, z którą ma być wykonana operacja crop
         :type crop_width: int
+        :return: Przycięty obraz
+        :rtype: Union
         """
         # Uzyskanie wymiarów obrazu
-        x_size = self._original_image.shape[0]
-        y_size = self._original_image.shape[1]
+        x_size = image.shape[0]
+        y_size = image.shape[1]
 
         # Obliczenie wspolrzednych do wykonania operacji crop o wymiarach crop_width i crop_height
         x_start_crop = (x_size - crop_width)//2
@@ -46,22 +40,34 @@ class ImageProcessor:
         y_end_crop = (y_size + crop_height)//2
 
         # Wykonanie operacji crop
-        self._processed_image = self._original_image[x_start_crop:x_end_crop,y_start_crop:y_end_crop]
+        cropped_image = image[x_start_crop:x_end_crop,y_start_crop:y_end_crop]
+
+        return cropped_image
 
 
-    def _set_grayscale(self):
+    @staticmethod
+    def _set_grayscale(image):
         """
         Metoda do ustawienia grayscale na obrazie zapisanym w klasie
 
+        :param image: Obraz, który będzie przetworzony
+        :type image: Union z OpenCV
+        :return: Obraz w skali grayscale
+        :rtype: Union
         """
 
-        self._processed_image = cv2.cvtColor(self._processed_image, cv2.COLOR_BGR2GRAY)
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        return gray_image
 
     def _find_face_mesh(self, image):
         """
+        Metoda do wykrywania lokalizacji
 
-        :return:
-        :rtype:
+        :param image: Obraz, który będzie przetworzony
+        :type image: Union z OpenCV
+        :return: Obraz, na którym są zaznaczone wskaźniki na twarzy
+        :rtype: Union z OpenCV
         """
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = self._faceMesh.process(image_rgb)
@@ -71,7 +77,7 @@ class ImageProcessor:
                 self._mpDraw.draw_landmarks(image, face_landmarks, self._mpFaceMesh.FACEMESH_CONTOURS,
                                             self._drawSpec, self._drawSpec)
 
-        return image
+        return image,results
 
 
 
@@ -89,16 +95,23 @@ class ImageProcessor:
         """
 
         # Wstępne przetworzenie obrazu
-        self._load_image(image)
-        self._crop_image(crop_width,crop_length)
-        self._set_grayscale()
+        cropped_image = self._crop_image(image, crop_width,crop_length)
+        gray_image = self._set_grayscale(cropped_image)
 
         # Zwrócenie przetworzonego obrazu
-        return self._processed_image
+        return gray_image
 
     def preprocess_image2(self, image):
+        """
+        Interfejs do przetwarzania landmarks na twarzy
+
+        :param image: Obraz, który będzie przetworzony
+        :type image: Union z OpenCV
+        :return:
+        :rtype:
+        """
+
         # Wstępne przetworzenie obrazu
-        self._load_image(image)
-        processed_image = self._find_face_mesh(image)
+        processed_image, _ = self._find_face_mesh(image)
 
         return processed_image
