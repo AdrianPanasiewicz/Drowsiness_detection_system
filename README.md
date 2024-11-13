@@ -52,6 +52,7 @@ This project aims to develop a real-time system that detects drowsiness and emot
 
 ## Examples
 ![Drowsiness Detection Example](examples/drowsiness_example.jpg)
+
 ![Emotion Detection Example](examples/emotion_example.jpg)
 
 ## Contributing
