@@ -4,6 +4,7 @@ import time
 from fastai.vision.all import *
 import mediapipe as mp
 import cv2
+import matplotlib.pyplot as plt
 
 
 from Workspace import *
@@ -34,19 +35,25 @@ if __name__ == "__main__":
         fps = Utils.calculate_fps()
 
         ret, frame = camera.read()
-        processed_frame_MM = image_processor.preprocess_image1(frame, *crop_size)
-        processed_frame = image_processor.preprocess_image2(frame)
+        # processed_frame_MM = image_processor.preprocess_image1(frame, *crop_size)
+        processed_frame, face_mesh_coords = image_processor.preprocess_image2(frame)
+
+        if face_mesh_coords.multi_face_landmarks is not None:
+            for face_mesh in face_mesh_coords.multi_face_landmarks:
+                for i in range(len(face_mesh.landmark)):
+                    print(face_mesh.landmark[i])
 
 
-        # Otrzymanie wyniku predykcji modeli zabiera aż 20 fps-ów
-        output = models["Emotion_model"].predict(processed_frame_MM)
-        cv2.putText(processed_frame, output[0], (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+
+
+
+        # output = models["Emotion_model"].predict(processed_frame_MM)
+        cv2.putText(processed_frame, "Czesc", (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
         cv2.putText(processed_frame, f"FPS: {int(fps)}", (20, 60), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
-        cv2.imshow('Emotion detection', processed_frame)
+        cv2.imshow('Drowsiness detection', processed_frame)
         stop_tick = time.process_time()
-        print(fps)
 
-        if cv2.waitKey(10) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     camera.release()

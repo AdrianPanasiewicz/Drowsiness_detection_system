@@ -112,6 +112,6 @@ class ImageProcessor:
         """
 
         # Wstępne przetworzenie obrazu
-        processed_image, _ = self._find_face_mesh(image)
+        processed_image, face_mesh_coords = self._find_face_mesh(image)
 
-        return processed_image
+        return processed_image, face_mesh_coords
