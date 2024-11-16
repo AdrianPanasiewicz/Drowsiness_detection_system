@@ -1,10 +1,11 @@
 import pathlib
 import time
 
+import matplotlib.pyplot as matplot
 from fastai.vision.all import *
 import mediapipe as mp
 import cv2
-import matplotlib.pyplot as plt
+import numpy as np
 
 
 from Workspace import *
@@ -38,12 +39,40 @@ if __name__ == "__main__":
         # processed_frame_MM = image_processor.preprocess_image1(frame, *crop_size)
         processed_frame, face_mesh_coords = image_processor.preprocess_image2(frame)
 
-        if face_mesh_coords.multi_face_landmarks is not None:
-            for face_mesh in face_mesh_coords.multi_face_landmarks:
-                for i in range(len(face_mesh.landmark)):
-                    print(face_mesh.landmark[i])
+        paramcalc = ParameterCalculator()
+        coords_1 = paramcalc.find_left_eye(face_mesh_coords)
+        coords_2 = paramcalc.find_right_eye(face_mesh_coords)
 
+        fig = matplot.figure()
+        ax = fig.add_subplot(projection='3d')
 
+        for face in coords_2:
+            x_list = list()
+            y_list = list()
+            z_list = list()
+
+            for key,value in face.items():
+                x_list.append(value.x)
+                y_list.append(value.y)
+                z_list.append(-value.z)
+
+            x_list.append(x_list[0])
+            y_list.append(y_list[0])
+            z_list.append(z_list[0])
+
+            x_list = np.array(x_list)
+            y_list = np.array(y_list)
+            z_list = np.array(z_list)
+
+        ax.plot(x_list, z_list, y_list)
+
+        size_xlim = np.max(x_list) - np.min(x_list)
+        size_ylim = np.max(y_list) - np.min(y_list)
+
+        ax.set(xlim=(0.45, 0.65), ylim=(-0.1, 0.1), zlim=(0.45, 0.65),
+                xlabel='X', ylabel='Y', zlabel='Z')
+
+        matplot.show()
 
 
 

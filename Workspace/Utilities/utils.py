@@ -27,4 +27,3 @@ class Utils:
         temp = pathlib.PosixPath
         fixed_path = pathlib.WindowsPath
         return fixed_path
-
