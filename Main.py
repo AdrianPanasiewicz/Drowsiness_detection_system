@@ -9,6 +9,7 @@ import numpy as np
 
 
 from Workspace import *
+from Workspace.Front_End.face_plotter import FacePlotter
 
 if __name__ == "__main__":
 
@@ -20,8 +21,12 @@ if __name__ == "__main__":
 
     model_loader = ModelLoader()
     models = model_loader.load_models()
-    # Initialise camera for video capture
 
+    parameter_calculator = ParameterCalculator()
+
+    face_plotter = FacePlotter()
+
+    # Initialise camera for video capture
     try:
         camera = cv2.VideoCapture(0)
         if camera is None or not camera.isOpened():
@@ -39,40 +44,21 @@ if __name__ == "__main__":
         # processed_frame_MM = image_processor.preprocess_image1(frame, *crop_size)
         processed_frame, face_mesh_coords = image_processor.preprocess_image2(frame)
 
-        paramcalc = ParameterCalculator()
-        coords_1 = paramcalc.find_left_eye(face_mesh_coords)
-        coords_2 = paramcalc.find_right_eye(face_mesh_coords)
+        coords_left_eye = parameter_calculator.find_left_eye(face_mesh_coords)
+        coords_right_eye = parameter_calculator.find_right_eye(face_mesh_coords)
+        coords_mouth = parameter_calculator.find_mouth(face_mesh_coords)
 
-        fig = matplot.figure()
-        ax = fig.add_subplot(projection='3d')
+        x_list_1, y_list_1, z_list_1 = parameter_calculator.get_coordinates(coords_left_eye)
+        x_list_2, y_list_2, z_list_2 = parameter_calculator.get_coordinates(coords_right_eye)
+        x_list_3, y_list_3, z_list_3 = parameter_calculator.get_coordinates(coords_mouth)
 
-        for face in coords_2:
-            x_list = list()
-            y_list = list()
-            z_list = list()
+        face_plotter.update_xyz_coords(x_list_1,y_list_1,z_list_1,"Left_eye")
+        face_plotter.update_xyz_coords(x_list_2, y_list_2, z_list_2, "Right_eye")
+        face_plotter.update_xyz_coords(x_list_3, y_list_3, z_list_3, "Mouth")
 
-            for key,value in face.items():
-                x_list.append(value.x)
-                y_list.append(value.y)
-                z_list.append(-value.z)
+        size_xlim = np.max(x_list_1) - np.min(x_list_1)
+        size_ylim = np.max(y_list_1) - np.min(y_list_1)
 
-            x_list.append(x_list[0])
-            y_list.append(y_list[0])
-            z_list.append(z_list[0])
-
-            x_list = np.array(x_list)
-            y_list = np.array(y_list)
-            z_list = np.array(z_list)
-
-        ax.plot(x_list, z_list, y_list)
-
-        size_xlim = np.max(x_list) - np.min(x_list)
-        size_ylim = np.max(y_list) - np.min(y_list)
-
-        ax.set(xlim=(0.45, 0.65), ylim=(-0.1, 0.1), zlim=(0.45, 0.65),
-                xlabel='X', ylabel='Y', zlabel='Z')
-
-        matplot.show()
 
 
 

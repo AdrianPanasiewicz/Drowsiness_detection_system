@@ -9,7 +9,7 @@ class ModelLoader:
     Klasa odpowiedzialna za wczytywanie modeli do programu.
     """
     # r'Workspace\Resources\Models\Drowsiness_model.pkl'
-    default_relative_model_locations = [r'Workspace\Resources\Models\Emotion_model.pkl']
+    default_relative_model_locations = [r'Resources\Models\Emotion_model.pkl']
 
     def __init__(self):
         """
