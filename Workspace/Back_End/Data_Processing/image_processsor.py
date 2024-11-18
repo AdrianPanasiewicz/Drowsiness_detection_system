@@ -10,7 +10,7 @@ class ImageProcessor:
 
         self._mpDraw = solutions.drawing_utils
         self._mpFaceMesh = solutions.face_mesh
-        self._faceMesh = self._mpFaceMesh.FaceMesh(max_num_faces=5)
+        self._faceMesh = self._mpFaceMesh.FaceMesh(max_num_faces=5, refine_landmarks=True)
         self._drawSpec = self._mpDraw.DrawingSpec(thickness=1, circle_radius=1, color = (0, 255, 0))
 
 

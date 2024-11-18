@@ -1,5 +1,6 @@
 import time
 import pathlib
+from mediapipe.python.solutions.face_mesh_connections import FACEMESH_LIPS
 
 class Utils:
 
@@ -27,3 +28,12 @@ class Utils:
         temp = pathlib.PosixPath
         fixed_path = pathlib.WindowsPath
         return fixed_path
+
+    @classmethod
+    def frozenset_to_list(self, frozenset):
+
+        pass
+
+
+if __name__ == "__main__":
+    ret = Utils.frozenset_to_list(FACEMESH_LIPS)

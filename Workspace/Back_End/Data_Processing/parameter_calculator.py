@@ -1,11 +1,15 @@
 import numpy as np
+from mediapipe.python.solutions.face_mesh_connections import FACEMESH_LIPS, FACEMESH_LEFT_EYE, FACEMESH_RIGHT_EYE
+from mediapipe.python.solutions.face_mesh_connections import FACEMESH_FACE_OVAL , FACEMESH_LEFT_IRIS, FACEMESH_RIGHT_IRIS
 
 class ParameterCalculator:
     def __init__(self):
         self._left_eye_indices = [398,384,385,386,387,388,466,263,249,390,373,374,380,381]
         self._right_eye_indices = [7,163,144,145,153,154,173,157,158,159,160,161]
         self._mouth_indices = [185,40,39,37,0,267,269,270,375,321,405,314,17,84,181,91,146,185,178,14,312,402]
-        self._iris_indices = list()
+        self._left_iris_indices = list()
+        self._right_iris_indices = list()
+        self._face_oval_indices = list()
 
     def find_left_eye(self, results) -> list:
         """
