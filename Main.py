@@ -6,10 +6,13 @@ from fastai.vision.all import *
 import mediapipe as mp
 import cv2
 import numpy as np
+import threading
 
 
 from Workspace import *
 from Workspace.Front_End.face_plotter import FacePlotter
+
+
 
 if __name__ == "__main__":
 
@@ -37,6 +40,10 @@ if __name__ == "__main__":
 
     past_tick = 0
 
+    Plot_thread = threading.Thread(target = face_plotter.plot_temp)
+    Plot_thread.start()
+
+
     while True:
         fps = Utils.calculate_fps()
 
@@ -56,11 +63,8 @@ if __name__ == "__main__":
         face_plotter.update_xyz_coords(x_list_2, y_list_2, z_list_2, "Right_eye")
         face_plotter.update_xyz_coords(x_list_3, y_list_3, z_list_3, "Mouth")
 
-        size_xlim = np.max(x_list_1) - np.min(x_list_1)
-        size_ylim = np.max(y_list_1) - np.min(y_list_1)
-
-
-
+        # size_xlim = np.max(x_list_1) - np.min(x_list_1)
+        # size_ylim = np.max(y_list_1) - np.min(y_list_1)
 
         # output = models["Emotion_model"].predict(processed_frame_MM)
         cv2.putText(processed_frame, "Czesc", (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
@@ -68,10 +72,11 @@ if __name__ == "__main__":
         cv2.imshow('Drowsiness detection', processed_frame)
         stop_tick = time.process_time()
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(16) & 0xFF == ord('q'):
             break
 
     camera.release()
     cv2.destroyAllWindows()
+
 
 
