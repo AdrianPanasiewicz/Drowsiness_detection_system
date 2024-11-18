@@ -40,9 +40,6 @@ if __name__ == "__main__":
 
     past_tick = 0
 
-    Plot_thread = threading.Thread(target = face_plotter.plot_temp)
-    Plot_thread.start()
-
 
     while True:
         fps = Utils.calculate_fps()

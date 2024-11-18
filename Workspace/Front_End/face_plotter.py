@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import threading
 
 # Need to fix this class or implement this class again.
 
@@ -16,6 +17,9 @@ class FacePlotter:
         #
         # self.ani = FuncAnimation(self.fig, self.animate, interval=33)
         # plt.show(block = False)
+
+        Plot_thread = threading.Thread(target=self.plot_temp, daemon=True)
+        Plot_thread.start()
 
 
     def animate(self, frame):
@@ -39,19 +43,13 @@ class FacePlotter:
         plt.show(block = False)
 
         while True:
-            print("Hello")
             ax.cla()
-            # ax.set(xlim=(0.2, 0.8), ylim=(-0.2, 0.08), zlim=(0.2, 0.8),
-            #         xlabel='Width', ylabel='Depth', zlabel='Height')
-
             ax.set(xlim=(0, 1), ylim=(0, 1), zlim=(0, 1),
                     xlabel='Width', ylabel='Depth', zlabel='Height')
 
             for key in self.x_dict_all:
-                print(f"X: {self.x_dict_all[key][0]}")
-                print(f"Y: {self.y_dict_all[key][0]}")
-                print(f"Z: {self.z_dict_all[key][0]}")
-                ax.plot(self.x_dict_all[key][0], self.z_dict_all[key][0], self.y_dict_all[key][0])
+                for person_index in range(len(self.x_dict_all[key])):
+                    ax.plot(self.x_dict_all[key][person_index], self.z_dict_all[key][person_index], self.y_dict_all[key][person_index])
 
             # plt.show()
             plt.pause(0.1)
