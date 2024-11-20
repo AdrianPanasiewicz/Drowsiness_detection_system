@@ -97,9 +97,3 @@ class Utils:
 
         return sorted(all_lips_lines)
 
-
-if __name__ == "__main__":
-    ret = Utils.frozenset_to_list(FACEMESH_LIPS)
-    print(ret)
-
-

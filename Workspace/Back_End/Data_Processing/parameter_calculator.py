@@ -1,12 +1,13 @@
 import numpy as np
 from mediapipe.python.solutions.face_mesh_connections import FACEMESH_LIPS, FACEMESH_LEFT_EYE, FACEMESH_RIGHT_EYE
 from mediapipe.python.solutions.face_mesh_connections import FACEMESH_FACE_OVAL , FACEMESH_LEFT_IRIS, FACEMESH_RIGHT_IRIS
+from Workspace.Utilities import Utils
 
 class ParameterCalculator:
     def __init__(self):
-        self._left_eye_indices = [398,384,385,386,387,388,466,263,249,390,373,374,380,381]
-        self._right_eye_indices = [7,163,144,145,153,154,173,157,158,159,160,161]
-        self._mouth_indices = [185,40,39,37,0,267,269,270,375,321,405,314,17,84,181,91,146,185,178,14,312,402]
+        self._left_eye_indices = Utils.frozenset_to_list(FACEMESH_LEFT_EYE)[0]          #TODO trzeba to poprawić
+        self._right_eye_indices = Utils.frozenset_to_list(FACEMESH_RIGHT_EYE)[0]
+        self._mouth_indices = Utils.frozenset_to_list(FACEMESH_LIPS)[0]
         self._left_iris_indices = list()
         self._right_iris_indices = list()
         self._face_oval_indices = list()
@@ -26,7 +27,7 @@ class ParameterCalculator:
             for face_mesh in results.multi_face_landmarks:
                 left_eye_coords = dict()
                 for number, index in enumerate(self._left_eye_indices,start=1):
-                    left_eye_coords.update({number:face_mesh.landmark[index]})
+                    left_eye_coords.update({number:face_mesh.landmark[index]}) #TODO Należy poprawić tą funkcję, aby obsługiwała tablicę
                     
                 all_left_eye_coords.append(left_eye_coords)
 
@@ -47,7 +48,7 @@ class ParameterCalculator:
             for face_mesh in results.multi_face_landmarks:
                 right_eye_coords = dict()
                 for number,index in enumerate(self._right_eye_indices,start = 1):
-                    right_eye_coords.update({number:face_mesh.landmark[index]})
+                    right_eye_coords.update({number:face_mesh.landmark[index]}) #TODO Należy poprawić tą funkcję, aby obsługiwała tablicę
 
                 all_right_eye_coords.append(right_eye_coords)
 
