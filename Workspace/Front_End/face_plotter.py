@@ -44,7 +44,7 @@ class FacePlotter:
 
         while True:
             ax.cla()
-            ax.set(xlim=(0, 1), ylim=(0, 1), zlim=(0, 1),
+            ax.set(xlim=(0, 1), ylim=(-0.5, 0.5), zlim=(0, 1),
                     xlabel='Width', ylabel='Depth', zlabel='Height')
 
             for key in self.x_dict_all:
