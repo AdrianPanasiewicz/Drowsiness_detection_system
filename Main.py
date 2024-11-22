@@ -56,9 +56,9 @@ if __name__ == "__main__":
         x_list_2, y_list_2, z_list_2 = parameter_calculator.get_coordinates(coords_right_eye)
         x_list_3, y_list_3, z_list_3 = parameter_calculator.get_coordinates(coords_mouth)
 
-        face_plotter.update_xyz_coords(x_list_1,y_list_1,z_list_1,"Left_eye")
-        face_plotter.update_xyz_coords(x_list_2, y_list_2, z_list_2, "Right_eye")
-        face_plotter.update_xyz_coords(x_list_3, y_list_3, z_list_3, "Mouth")
+        face_plotter.update_xyz_coords(x_list_1,y_list_1,z_list_1,"LEFT_EYE")
+        face_plotter.update_xyz_coords(x_list_2, y_list_2, z_list_2, "RIGHT_EYE")
+        face_plotter.update_xyz_coords(x_list_3, y_list_3, z_list_3, "MOUTH")
 
         # size_xlim = np.max(x_list_1) - np.min(x_list_1)
         # size_ylim = np.max(y_list_1) - np.min(y_list_1)
