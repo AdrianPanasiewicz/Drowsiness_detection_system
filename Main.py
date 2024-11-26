@@ -57,8 +57,8 @@ if __name__ == "__main__":
         left_ecr, right_ecr = perclos_finder.find_parameter(face_mesh_coords)
 
         os.system('cls')
-        print(f"Left eye ECR: \t{float(left_ecr[0])}")
-        print(f"Right eye ECR: \t{float(right_ecr[0])}")
+        print(f"Left eye ECR: \t{(left_ecr)}")
+        print(f"Right eye ECR: \t{(right_ecr)}")
 
         x_list_1, y_list_1, z_list_1 = parameter_calculator.get_coordinates(coords_left_eye)
         x_list_2, y_list_2, z_list_2 = parameter_calculator.get_coordinates(coords_right_eye)

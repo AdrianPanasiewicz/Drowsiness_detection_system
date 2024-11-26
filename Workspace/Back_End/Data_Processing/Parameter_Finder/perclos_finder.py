@@ -30,7 +30,7 @@ class PerclosFinder(ParameterFinder):
         :return:
         :rtype:
         """
-        all_delta_y = list()
+        all_delta_y = np.array([])
         all_faces_ecr = list()
 
         if face_coords.multi_face_landmarks:
@@ -40,7 +40,7 @@ class PerclosFinder(ParameterFinder):
                     y1 = face_mesh.landmark[pair[1]].y
 
                     delta_y = abs(y2-y1)
-                    all_delta_y.append(delta_y)
+                    all_delta_y = np.append(all_delta_y,delta_y)
 
                 x2 = face_mesh.landmark[indices[-1][0]].x
                 x1 = face_mesh.landmark[indices[-1][1]].x
@@ -52,9 +52,7 @@ class PerclosFinder(ParameterFinder):
                 eye_closure_ratio = mean_y_distance / x_distance
                 all_faces_ecr.append(eye_closure_ratio)
 
-            return all_faces_ecr
-        else :
-            return 1
+        return all_faces_ecr
 
     def _calculate_perclos(self, eye_closure_ratio):
         pass
