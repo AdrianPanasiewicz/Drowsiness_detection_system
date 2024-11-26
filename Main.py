@@ -1,5 +1,6 @@
 import pathlib
 import time
+import os
 
 import matplotlib.pyplot as matplot
 from fastai.vision.all import *
@@ -10,7 +11,6 @@ import threading
 
 
 from Workspace import *
-from Workspace.Front_End.face_plotter import FacePlotter
 
 
 
@@ -25,9 +25,9 @@ if __name__ == "__main__":
     model_loader = ModelLoader()
     models = model_loader.load_models()
 
-    parameter_calculator = ParameterCalculator()
-
-    face_plotter = FacePlotter()
+    parameter_calculator = CoordinatesParser()
+    face_plotter = face_plotter.FacePlotter()
+    os.system('cls')
 
     # Initialise camera for video capture
     try:
@@ -40,6 +40,8 @@ if __name__ == "__main__":
 
     past_tick = 0
 
+    perclos_finder = perclos_finder.PerclosFinder()
+
 
     while True:
         fps = Utils.calculate_fps()
@@ -51,6 +53,12 @@ if __name__ == "__main__":
         coords_left_eye = parameter_calculator.find_left_eye(face_mesh_coords)
         coords_right_eye = parameter_calculator.find_right_eye(face_mesh_coords)
         coords_mouth = parameter_calculator.find_mouth(face_mesh_coords)
+
+        left_ecr, right_ecr = perclos_finder.find_parameter(face_mesh_coords)
+
+        os.system('cls')
+        print(f"Left eye ECR: \t{float(left_ecr[0])}")
+        print(f"Right eye ECR: \t{float(right_ecr[0])}")
 
         x_list_1, y_list_1, z_list_1 = parameter_calculator.get_coordinates(coords_left_eye)
         x_list_2, y_list_2, z_list_2 = parameter_calculator.get_coordinates(coords_right_eye)

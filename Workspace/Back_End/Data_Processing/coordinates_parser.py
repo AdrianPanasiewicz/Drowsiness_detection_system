@@ -3,7 +3,7 @@ from mediapipe.python.solutions.face_mesh_connections import FACEMESH_LIPS, FACE
 from mediapipe.python.solutions.face_mesh_connections import FACEMESH_FACE_OVAL , FACEMESH_LEFT_IRIS, FACEMESH_RIGHT_IRIS
 from Workspace.Utilities import Utils
 
-class ParameterCalculator:
+class CoordinatesParser:
     def __init__(self):
         self._left_eye_indices = Utils.frozenset_to_list(FACEMESH_LEFT_EYE)
         self._right_eye_indices = Utils.frozenset_to_list(FACEMESH_RIGHT_EYE)
@@ -19,7 +19,7 @@ class ParameterCalculator:
         :param results: Wynik działania funkcji process od mediapipe
         :type results:
         :return: Lista z list bibliotek ze współrzędnymi punktów orientacyjnych lewego oka
-        :rtype: List
+        :rtype: list
         """
 
         all_left_eye_coords = list()
