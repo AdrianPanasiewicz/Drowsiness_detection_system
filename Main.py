@@ -22,8 +22,8 @@ if __name__ == "__main__":
     image_processor = ImageProcessor()
     crop_size = (224,224)
 
-    model_loader = ModelLoader()
-    models = model_loader.load_models()
+    # model_loader = ModelLoader()
+    # models = model_loader.load_models()
 
     parameter_calculator = CoordinatesParser()
     face_plotter = face_plotter.FacePlotter()
@@ -54,11 +54,10 @@ if __name__ == "__main__":
         coords_right_eye = parameter_calculator.find_right_eye(face_mesh_coords)
         coords_mouth = parameter_calculator.find_mouth(face_mesh_coords)
 
-        left_ecr, right_ecr = perclos_finder.find_parameter(face_mesh_coords)
+        perclos = perclos_finder.find_parameter(face_mesh_coords)
 
         os.system('cls')
-        print(f"Left eye ECR: \t{(left_ecr)}")
-        print(f"Right eye ECR: \t{(right_ecr)}")
+        print(f"PERCLOS =\t{round(perclos,2)}")
 
         x_list_1, y_list_1, z_list_1 = parameter_calculator.get_coordinates(coords_left_eye)
         x_list_2, y_list_2, z_list_2 = parameter_calculator.get_coordinates(coords_right_eye)
@@ -72,7 +71,7 @@ if __name__ == "__main__":
         # size_ylim = np.max(y_list_1) - np.min(y_list_1)
 
         # output = models["Emotion_model"].predict(processed_frame_MM)
-        cv2.putText(processed_frame, "Czesc", (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+        cv2.putText(processed_frame, "Emotion (Deactivated)", (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
         cv2.putText(processed_frame, f"FPS: {int(fps)}", (20, 60), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
         cv2.imshow('Drowsiness detection', processed_frame)
         stop_tick = time.process_time()
