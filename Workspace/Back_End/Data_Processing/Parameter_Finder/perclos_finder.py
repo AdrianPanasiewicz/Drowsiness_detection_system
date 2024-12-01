@@ -5,7 +5,8 @@ class PerclosFinder(ParameterFinder):
     def __init__(self):
         self.left_eye_indices = [(385,380),(387,373),(263,362)]
         self.right_eye_indices = [(160,144),(158,153),(133,33)]
-        self.ecr_per_face_memory = {1:{1:(0,0),2:(0,0)}} #TODO należy to podmienić po debugoawniu
+        self.ecr_per_face_memory = {1:{1:(0,0),2:(0,0)}} #TODO należy to podmienić po debugowaniu
+        self.previous_perclos = 0
 
     def find_parameter(self, face_coords):
         """
@@ -17,7 +18,12 @@ class PerclosFinder(ParameterFinder):
         """
         left_ecr = self._find_eye_closure_ratio(face_coords, self.left_eye_indices)
         right_ecr = self._find_eye_closure_ratio(face_coords, self.right_eye_indices)
-        perclos = self._calculate_perclos(left_ecr[0], right_ecr[0],1)
+
+        if face_coords.multi_face_landmarks:
+            perclos = self._calculate_perclos(left_ecr[0], right_ecr[0],1)
+            self.previous_perclos = perclos
+        else:
+            perclos = self.previous_perclos
 
         return perclos
 
@@ -71,7 +77,7 @@ class PerclosFinder(ParameterFinder):
         """
         #TODO Automatyczne dodawanie osób
         #TODO Automatyczne usuwanie osób
-        period = 60 #frames
+        period = 300 #frames
         # Usuń najstarszą klatkę i dodaj obecną, jeśli okres jest dłuższy niż 10s
         if len(self.ecr_per_face_memory[memory_key])>=period:   #TODO Okres*FPS
             oldest_frame = min(self.ecr_per_face_memory[memory_key].keys())

@@ -1,10 +1,11 @@
 import time
 import pathlib
+import numpy as np
 from mediapipe.python.solutions.face_mesh_connections import FACEMESH_LIPS
 
 class Utils:
 
-    _past_tick = 0
+    tick_memory = np.zeros(15)
 
     @classmethod
     def calculate_fps(cls):
@@ -16,9 +17,14 @@ class Utils:
         """
 
         current_tick = time.time()
-        fps = 1/(current_tick - cls._past_tick)
-        cls._past_tick = current_tick
+        cls.tick_memory = np.roll(cls.tick_memory,-1)
+        partial_fps = np.zeros(len(cls.tick_memory)-1)
+        cls.tick_memory[-1] = current_tick
+        for i in range(len(cls.tick_memory)-1):
+            if cls.tick_memory[-1-i] != cls.tick_memory[-2-i]:
+                partial_fps[i] = 1/(cls.tick_memory[-1-i] - cls.tick_memory[-2-i])
 
+        fps = np.mean(partial_fps)
         return fps
 
     @classmethod

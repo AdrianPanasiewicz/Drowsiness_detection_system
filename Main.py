@@ -1,15 +1,3 @@
-import pathlib
-import time
-import os
-
-import matplotlib.pyplot as matplot
-from fastai.vision.all import *
-import mediapipe as mp
-import cv2
-import numpy as np
-import threading
-
-
 from Workspace import *
 
 
@@ -56,8 +44,8 @@ if __name__ == "__main__":
 
         perclos = perclos_finder.find_parameter(face_mesh_coords)
 
-        os.system('cls')
-        print(f"PERCLOS =\t{round(perclos,2)}")
+        # os.system('cls')
+        # print(f"PERCLOS =\t{round(perclos,2)}")
 
         x_list_1, y_list_1, z_list_1 = parameter_calculator.get_coordinates(coords_left_eye)
         x_list_2, y_list_2, z_list_2 = parameter_calculator.get_coordinates(coords_right_eye)
@@ -71,12 +59,13 @@ if __name__ == "__main__":
         # size_ylim = np.max(y_list_1) - np.min(y_list_1)
 
         # output = models["Emotion_model"].predict(processed_frame_MM)
-        cv2.putText(processed_frame, "Emotion (Deactivated)", (20, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
-        cv2.putText(processed_frame, f"FPS: {int(fps)}", (20, 60), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+        cv2.putText(processed_frame, f"Emotion: (Deactivated)", (15, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+        cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 60), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+        cv2.putText(processed_frame, f"PERCLOS: {int(perclos*100)}%", (15, 90), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
         cv2.imshow('Drowsiness detection', processed_frame)
         stop_tick = time.process_time()
 
-        if cv2.waitKey(16) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     camera.release()
