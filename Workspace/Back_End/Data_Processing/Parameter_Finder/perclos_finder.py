@@ -1,3 +1,5 @@
+from sympy import horner
+
 from .parameter_finder import ParameterFinder
 import numpy as np
 
@@ -7,6 +9,7 @@ class PerclosFinder(ParameterFinder):
         self.right_eye_indices = [(160,144),(158,153),(133,33)]
         self.ecr_per_face_memory = {1:{1:(0,0),2:(0,0)}} #TODO należy to podmienić po debugowaniu
         self.previous_perclos = 0
+        self.perclos_count_distance = 0.45
 
     def find_parameter(self, face_coords):
         """
@@ -39,26 +42,33 @@ class PerclosFinder(ParameterFinder):
         :return:
         :rtype:
         """
-        all_delta_y = np.array([])
+        all_delta_ver_dist = np.array([])
         all_faces_ecr = list()
 
         if face_coords.multi_face_landmarks:
             for face_mesh in face_coords.multi_face_landmarks:
                 for pair in indices[0:-1]:
                     y2 = face_mesh.landmark[pair[0]].y
+                    x2 = face_mesh.landmark[pair[0]].x
+
                     y1 = face_mesh.landmark[pair[1]].y
+                    x1 = face_mesh.landmark[pair[1]].x
 
-                    delta_y = abs(y2-y1)
-                    all_delta_y = np.append(all_delta_y,delta_y)
 
+                    delta_ver_dist = ((y2 - y1)**2 + (x2 - x1)**2)**0.5
+                    all_delta_ver_dist = np.append(all_delta_ver_dist, delta_ver_dist)
+
+                y2 = face_mesh.landmark[indices[-1][0]].y
                 x2 = face_mesh.landmark[indices[-1][0]].x
+
+                y1 = face_mesh.landmark[indices[-1][1]].y
                 x1 = face_mesh.landmark[indices[-1][1]].x
-                x_distance = abs(x2-x1)
+                hor_distance = ((y2 - y1)**2 + (x2 - x1)**2)**0.5
 
-                all_delta_y = np.array(all_delta_y)
-                mean_y_distance = np.mean(all_delta_y)
+                all_delta_ver_dist = np.array(all_delta_ver_dist)
+                mean_ver_distance = np.mean(all_delta_ver_dist)
 
-                eye_closure_ratio = mean_y_distance / x_distance
+                eye_closure_ratio = mean_ver_distance / hor_distance
                 all_faces_ecr.append(eye_closure_ratio)
 
         return all_faces_ecr
@@ -90,7 +100,7 @@ class PerclosFinder(ParameterFinder):
         perclos = 0
         for _,pair in self.ecr_per_face_memory[memory_key].items():
             mean_from_pair = pair[0] + pair[1]
-            if mean_from_pair < 0.3:
+            if mean_from_pair < self.perclos_count_distance:
                 perclos += 1
 
         perclos = perclos/period

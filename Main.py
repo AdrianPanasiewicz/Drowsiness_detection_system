@@ -1,6 +1,6 @@
 from Workspace import *
-
-
+from Workspace.Back_End.Data_Processing.Parameter_Finder import jawn_finder
+from Workspace.Back_End.Data_Processing.Parameter_Finder import face_angle_finder
 
 if __name__ == "__main__":
 
@@ -28,7 +28,9 @@ if __name__ == "__main__":
 
     past_tick = 0
 
-    perclos_finder = perclos_finder.PerclosFinder()
+    find_perclos = perclos_finder.PerclosFinder()
+    find_jawn = jawn_finder.JawnFinder()
+    find_face_tilt = face_angle_finder.FaceAngleFinder()
 
 
     while True:
@@ -42,7 +44,9 @@ if __name__ == "__main__":
         coords_right_eye = parameter_calculator.find_right_eye(face_mesh_coords)
         coords_mouth = parameter_calculator.find_mouth(face_mesh_coords)
 
-        perclos = perclos_finder.find_parameter(face_mesh_coords)
+        perclos = find_perclos.find_parameter(face_mesh_coords)
+        jawn_ratio = find_jawn.find_parameter(face_mesh_coords)
+        head_tilt = find_face_tilt.find_parameter(face_mesh_coords)
 
         # os.system('cls')
         # print(f"PERCLOS =\t{round(perclos,2)}")
@@ -62,6 +66,8 @@ if __name__ == "__main__":
         cv2.putText(processed_frame, f"Emotion: (Deactivated)", (15, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
         cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 60), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
         cv2.putText(processed_frame, f"PERCLOS: {int(perclos*100)}%", (15, 90), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+        cv2.putText(processed_frame, f"JAWN: {round(jawn_ratio[0],2)}", (15, 120), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
+        cv2.putText(processed_frame, f"Head tilt: {round(head_tilt, 2)} deg", (15, 150), cv2.FONT_HERSHEY_DUPLEX, 1,  [17, 163, 252], 2)
         cv2.imshow('Drowsiness detection', processed_frame)
         stop_tick = time.process_time()
 

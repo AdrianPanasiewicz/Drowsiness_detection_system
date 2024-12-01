@@ -1,7 +1,6 @@
 import time
 import pathlib
 import numpy as np
-from mediapipe.python.solutions.face_mesh_connections import FACEMESH_LIPS
 
 class Utils:
 
@@ -102,4 +101,3 @@ class Utils:
                     # print(f"Result: \t\t{joint_line}\n")
 
         return sorted(all_lips_lines)
-
