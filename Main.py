@@ -1,8 +1,4 @@
 from Workspace import *
-import matplotlib.pyplot as plt
-from Workspace.Back_End.Data_Processing.Parameter_Finder import jawn_finder
-from Workspace.Back_End.Data_Processing.Parameter_Finder import face_angle_finder
-
 if __name__ == "__main__":
 
     pathlib.PosixPath = Utils.fix_pathlib()
