@@ -1,8 +1,13 @@
-import time
 import pathlib
+import time
+
 import numpy as np
 
+
 class Utils:
+    """
+    Klasa z różnymi pożytecznymi funkcjami.
+    """
 
     tick_memory = np.zeros(15)  # Zmienna stosowana do stworzenia średniej kroczącej
 
@@ -17,13 +22,13 @@ class Utils:
 
         current_tick = time.time()
         # Implementacja średniej kroczącej
-        cls.tick_memory = np.roll(cls.tick_memory,-1)
-        partial_fps = np.zeros(len(cls.tick_memory)-1)
+        cls.tick_memory = np.roll(cls.tick_memory, -1)
+        partial_fps = np.zeros(len(cls.tick_memory) - 1)
         cls.tick_memory[-1] = current_tick
         # Obliczenie pośrednich wartości klatek na sekundę, a następnie obliczenie jej średniej
-        for i in range(len(cls.tick_memory)-1):
-            if cls.tick_memory[-1-i] != cls.tick_memory[-2-i]:
-                partial_fps[i] = 1/(cls.tick_memory[-1-i] - cls.tick_memory[-2-i])
+        for i in range(len(cls.tick_memory) - 1):
+            if cls.tick_memory[-1 - i] != cls.tick_memory[-2 - i]:
+                partial_fps[i] = 1 / (cls.tick_memory[-1 - i] - cls.tick_memory[-2 - i])
 
         fps = np.mean(partial_fps)
         return fps
@@ -73,7 +78,6 @@ class Utils:
         face_plotter.update_xyz_coords(x_list_4, y_list_4, z_list_4, "LEFT_IRIS")
         face_plotter.update_xyz_coords(x_list_5, y_list_5, z_list_5, "RIGHT_IRIS")
 
-
     @classmethod
     def frozenset_to_list(cls, face_frag: frozenset) -> list:
         """
@@ -95,7 +99,7 @@ class Utils:
             add_loc = []
 
             # Sprawdzenie, czy można połączyć obecną linię, jeśli ona sąsiaduję z inną
-            for index,face_line in enumerate(all_face_lines, start = 0):
+            for index, face_line in enumerate(all_face_lines, start=0):
 
                 if tuple_connection[0] == face_line[-1]:
                     if is_added:

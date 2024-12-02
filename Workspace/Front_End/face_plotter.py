@@ -1,6 +1,7 @@
+import threading
+
 import matplotlib.pyplot as plt
 
-import threading
 
 class FacePlotter:
     def __init__(self):
@@ -11,7 +12,6 @@ class FacePlotter:
         self.x_dict_all = dict()
         self.y_dict_all = dict()
         self.z_dict_all = dict()
-
 
         plot_thread = threading.Thread(target=self.animate_plot, daemon=True)
         plot_thread.start()
@@ -34,7 +34,6 @@ class FacePlotter:
         self.y_dict_all.update({name: y_list})
         self.z_dict_all.update({name: z_list})
 
-
     def animate_plot(self):
         """
         Metoda do stworzenia i aktualizowania wyświetlania się wykresu w czasie rzeczywistym,
@@ -44,14 +43,14 @@ class FacePlotter:
         # Stworzenie kontenera do wyświetlania wykresu
         fig = plt.figure()
         ax = fig.add_subplot(projection='3d')
-        plt.show(block = False)
+        plt.show(block=False)
 
         # Aktualizowanie wyświetlania wykresu w czasie rzeczywistym
         while True:
             # Wyczyszczenie z wyświetlanych punktów z wykresu
             ax.cla()
             ax.set(xlim=(0, 1), ylim=(-0.5, 0.5), zlim=(0, 1),
-                    xlabel='Width', ylabel='Depth', zlabel='Height')
+                   xlabel='Width', ylabel='Depth', zlabel='Height')
 
             # Wykreślenie punktów z nowymi współrzędnymi
             for key in self.x_dict_all:
@@ -65,7 +64,7 @@ class FacePlotter:
                             ax.plot(x_vals, z_vals, y_vals, color=line_color)
                 else:
                     # W przypadku, gdy nnie wykryto danego fragmentu na twarzy, to pozostawiono wykres pustym
-                    ax.plot([],[],[])
+                    ax.plot([], [], [])
 
             plt.pause(0.1)
 
@@ -81,11 +80,14 @@ class FacePlotter:
         :rtype: str
         """
         if key.upper() == "LEFT_EYE":
-            line_color = FacePlotter.format_rgb_string(15 + 50 * person_index, 15 + 50 * person_index, 160 - 50 * person_index)
+            line_color = FacePlotter.format_rgb_string(15 + 50 * person_index, 15 + 50 * person_index,
+                                                       160 - 50 * person_index)
         elif key.upper() == "RIGHT_EYE":
-            line_color = FacePlotter.format_rgb_string(15 + 50 * person_index, 15 + 50 * person_index, 160 - 50 * person_index)
+            line_color = FacePlotter.format_rgb_string(15 + 50 * person_index, 15 + 50 * person_index,
+                                                       160 - 50 * person_index)
         elif key.upper() == "MOUTH":
-            line_color = FacePlotter.format_rgb_string(160 - 50 * person_index, 15 + 50 * person_index, 15 + 50 * person_index)
+            line_color = FacePlotter.format_rgb_string(160 - 50 * person_index, 15 + 50 * person_index,
+                                                       15 + 50 * person_index)
         elif key.upper() == "LEFT_IRIS":
             line_color = FacePlotter.format_rgb_string(15, 15 + 50 * person_index, 15 + 50 * person_index)
         elif key.upper() == "RIGHT_IRIS":
@@ -125,5 +127,3 @@ class FacePlotter:
         # Stworzenie string rgb
         line_color = f"#{red}{green}{blue}"
         return line_color
-
-
