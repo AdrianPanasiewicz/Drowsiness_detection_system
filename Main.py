@@ -67,7 +67,7 @@ if __name__ == "__main__":
         cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 60), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
         cv2.putText(processed_frame, f"PERCLOS: {int(perclos*100)}%", (15, 90), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
         cv2.putText(processed_frame, f"JAWN: {round(jawn_ratio[0],2)}", (15, 120), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
-        cv2.putText(processed_frame, f"Head tilt: {round(head_tilt, 2)} deg", (15, 150), cv2.FONT_HERSHEY_DUPLEX, 1,  [17, 163, 252], 2)
+        cv2.putText(processed_frame, f"Head tilt: {round(head_tilt, 2)}", (15, 150), cv2.FONT_HERSHEY_DUPLEX, 1,  [17, 163, 252], 2)
         cv2.imshow('Drowsiness detection', processed_frame)
         stop_tick = time.process_time()
 

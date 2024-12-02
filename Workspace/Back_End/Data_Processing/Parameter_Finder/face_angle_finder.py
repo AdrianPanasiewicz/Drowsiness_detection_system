@@ -54,11 +54,11 @@ class FaceAngleFinder(ParameterFinder):
         y1 = face_mesh.landmark[pair[1]].y
         z1 = face_mesh.landmark[pair[1]].z
 
-        delta_x = abs(x2 - x1)
-        delta_y = abs(y2 - y1)
+        delta_x = x2 - x1
+        delta_y = y2 - y1
         delta_z = abs(z2 - z1)
 
-        denominator = (delta_x * delta_x + delta_y + delta_y)**(1/2)
-        face_angle = math.atan2(delta_z,denominator)*180/math.pi
+        denominator = (delta_x * delta_x + delta_y * delta_y)**(1/2)
+        face_angle = math.atan2(delta_z,denominator)*180/math.pi * delta_y/abs(delta_y)
 
         return face_angle

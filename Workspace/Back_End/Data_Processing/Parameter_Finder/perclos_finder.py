@@ -9,7 +9,7 @@ class PerclosFinder(ParameterFinder):
         self.right_eye_indices = [(160,144),(158,153),(133,33)]
         self.ecr_per_face_memory = {1:{1:(0,0),2:(0,0)}} #TODO należy to podmienić po debugowaniu
         self.previous_perclos = 0
-        self.perclos_count_distance = 0.45
+        self.perclos_count_distance = 0.4
 
     def find_parameter(self, face_coords):
         """
