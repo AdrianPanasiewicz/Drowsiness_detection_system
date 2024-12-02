@@ -29,8 +29,6 @@ if __name__ == "__main__":
     except TypeError as e:
         raise TypeError('Nie udało się uzyskać dostępu do kamery lub kamera nie istnieje') from e
 
-    past_tick = 0
-
     perclos_threshold = 0.4
     yawn_threshold = 0.6
 
@@ -38,7 +36,8 @@ if __name__ == "__main__":
     find_jawn = jawn_finder.JawnFinder(yawn_threshold)
     find_face_tilt = face_angle_finder.FaceAngleFinder()
     find_saccade_velocity = saccade_speed_velocity.SaccadeVelocityFinder()
-    saccs = np.zeros(1)
+    # saccs = np.zeros(1)
+
     while True:
         fps = Utils.calculate_fps()
 
@@ -54,23 +53,7 @@ if __name__ == "__main__":
         # os.system('cls')
         # print(f"PERCLOS =\t{round(perclos,2)}")
 
-        coords_left_eye = parameter_calculator.find_left_eye(face_mesh_coords)
-        coords_right_eye = parameter_calculator.find_right_eye(face_mesh_coords)
-        coords_mouth = parameter_calculator.find_mouth(face_mesh_coords)
-        coords_left_iris = parameter_calculator.find_left_iris(face_mesh_coords)
-        coords_right_iris = parameter_calculator.find_right_iris(face_mesh_coords)
-
-        x_list_1, y_list_1, z_list_1 = parameter_calculator.get_coordinates(coords_left_eye)
-        x_list_2, y_list_2, z_list_2 = parameter_calculator.get_coordinates(coords_right_eye)
-        x_list_3, y_list_3, z_list_3 = parameter_calculator.get_coordinates(coords_mouth)
-        x_list_4, y_list_4, z_list_4 = parameter_calculator.get_coordinates(coords_left_iris)
-        x_list_5, y_list_5, z_list_5 = parameter_calculator.get_coordinates(coords_right_iris)
-
-        face_plotter.update_xyz_coords(x_list_1,y_list_1,z_list_1,"LEFT_EYE")
-        face_plotter.update_xyz_coords(x_list_2, y_list_2, z_list_2, "RIGHT_EYE")
-        face_plotter.update_xyz_coords(x_list_3, y_list_3, z_list_3, "MOUTH")
-        face_plotter.update_xyz_coords(x_list_4, y_list_4, z_list_4, "LEFT_IRIS")
-        face_plotter.update_xyz_coords(x_list_5, y_list_5, z_list_5, "RIGHT_IRIS")
+        Utils.plot_face(parameter_calculator, face_plotter, face_mesh_coords)
 
         # output = models["Emotion_model"].predict(processed_frame_MM)
         cv2.putText(processed_frame, f"Emotion: (Deactivated)", (15, 30), *text_parameters)
@@ -81,7 +64,6 @@ if __name__ == "__main__":
         cv2.putText(processed_frame, f"Head tilt: {round(head_tilt, 2)}", (15, 180), *text_parameters)
         cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 210), *text_parameters)
         cv2.imshow('Drowsiness detection', processed_frame)
-        stop_tick = time.process_time()
 
         # if len(saccs) >= 20:
         #     saccs = np.roll(saccs, -1)
