@@ -9,6 +9,8 @@ if __name__ == "__main__":
     # Załadowanie klasy ImageProcessor do przetwarzania obrazu
     image_processor = ImageProcessor()
     crop_size = (224,224)
+    text_color = [240, 10, 10]
+    text_parameters = (cv2.FONT_HERSHEY_DUPLEX,1,text_color,2)
 
     # model_loader = ModelLoader()
     # models = model_loader.load_models()
@@ -28,8 +30,11 @@ if __name__ == "__main__":
 
     past_tick = 0
 
-    find_perclos = perclos_finder.PerclosFinder()
-    find_jawn = jawn_finder.JawnFinder()
+    perclos_threshold = 0.4
+    yawn_threshold = 0.6
+
+    find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
+    find_jawn = jawn_finder.JawnFinder(yawn_threshold)
     find_face_tilt = face_angle_finder.FaceAngleFinder()
 
 
@@ -45,7 +50,7 @@ if __name__ == "__main__":
         coords_mouth = parameter_calculator.find_mouth(face_mesh_coords)
 
         perclos = find_perclos.find_parameter(face_mesh_coords)
-        jawn_ratio = find_jawn.find_parameter(face_mesh_coords)
+        is_jawning, jawn_counter = find_jawn.find_parameter(face_mesh_coords)
         head_tilt = find_face_tilt.find_parameter(face_mesh_coords)
 
         # os.system('cls')
@@ -63,11 +68,12 @@ if __name__ == "__main__":
         # size_ylim = np.max(y_list_1) - np.min(y_list_1)
 
         # output = models["Emotion_model"].predict(processed_frame_MM)
-        cv2.putText(processed_frame, f"Emotion: (Deactivated)", (15, 30), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
-        cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 60), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
-        cv2.putText(processed_frame, f"PERCLOS: {int(perclos*100)}%", (15, 90), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
-        cv2.putText(processed_frame, f"JAWN: {round(jawn_ratio[0],2)}", (15, 120), cv2.FONT_HERSHEY_DUPLEX, 1, [17, 163, 252], 2)
-        cv2.putText(processed_frame, f"Head tilt: {round(head_tilt, 2)}", (15, 150), cv2.FONT_HERSHEY_DUPLEX, 1,  [17, 163, 252], 2)
+        cv2.putText(processed_frame, f"Emotion: (Deactivated)", (15, 30), *text_parameters)
+        cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 60), *text_parameters)
+        cv2.putText(processed_frame, f"PERCLOS: {int(perclos*100)}%", (15, 90), *text_parameters)
+        cv2.putText(processed_frame, f"Jawn: {is_jawning}", (15, 120), *text_parameters)
+        cv2.putText(processed_frame, f"Jawn counter: {jawn_counter}", (15, 150), *text_parameters)
+        cv2.putText(processed_frame, f"Head tilt: {round(head_tilt, 2)}", (15, 180), *text_parameters)
         cv2.imshow('Drowsiness detection', processed_frame)
         stop_tick = time.process_time()
 

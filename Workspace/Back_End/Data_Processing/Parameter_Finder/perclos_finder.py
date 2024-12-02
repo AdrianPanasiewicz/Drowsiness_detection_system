@@ -4,12 +4,12 @@ from .parameter_finder import ParameterFinder
 import numpy as np
 
 class PerclosFinder(ParameterFinder):
-    def __init__(self):
+    def __init__(self, perclos_threshold):
         self.left_eye_indices = [(385,380),(387,373),(263,362)]
         self.right_eye_indices = [(160,144),(158,153),(133,33)]
         self.ecr_per_face_memory = {1:{1:(0,0),2:(0,0)}} #TODO należy to podmienić po debugowaniu
         self.previous_perclos = 0
-        self.perclos_count_distance = 0.4
+        self.perclos_threshold = perclos_threshold
 
     def find_parameter(self, face_coords):
         """
@@ -100,7 +100,7 @@ class PerclosFinder(ParameterFinder):
         perclos = 0
         for _,pair in self.ecr_per_face_memory[memory_key].items():
             mean_from_pair = pair[0] + pair[1]
-            if mean_from_pair < self.perclos_count_distance:
+            if mean_from_pair < self.perclos_threshold:
                 perclos += 1
 
         perclos = perclos/period

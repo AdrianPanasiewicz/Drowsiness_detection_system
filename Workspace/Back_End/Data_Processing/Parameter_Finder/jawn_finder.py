@@ -4,13 +4,17 @@ from .parameter_finder import ParameterFinder
 
 
 class JawnFinder(ParameterFinder):
-    def __init__(self):
+    def __init__(self, yawn_threshold):
         self.mouth_indices = np.array([[37, 84], [0, 17], [267, 314], [62,29]])
-        pass
+        self.yawn_counter = 0
+        self.yawn_memory = np.array(np.zeros(10),dtype='bool')
+        self.yawn_threshold = yawn_threshold
+
 
     def find_parameter(self, face_coords):
         jawn_ratios = self._find_jawn_ratio(face_coords)
-        return jawn_ratios
+        is_jawning = self.detect_yawn(jawn_ratios)
+        return is_jawning, self.yawn_counter
 
 
     def _find_jawn_ratio(self,face_coords):
@@ -61,3 +65,20 @@ class JawnFinder(ParameterFinder):
         x1 = face_mesh.landmark[pair[1]].x
         delta_ver_dist = ((y2 - y1) ** 2 + (x2 - x1) ** 2) ** 0.5
         return delta_ver_dist
+
+    def detect_yawn(self, yawn_ratio):
+        """
+
+        :return:
+        :rtype:
+        """
+        self.yawn_memory = np.roll(self.yawn_memory, -1)
+        self.yawn_memory[-1] = False
+        if yawn_ratio[0] >= self.yawn_threshold:
+            if not any(self.yawn_memory):
+                self.yawn_counter += 1
+
+            self.yawn_memory[-1] = True
+            return True
+
+        return False
