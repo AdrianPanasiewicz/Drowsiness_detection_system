@@ -1,5 +1,3 @@
-from sympy import horner
-
 from .parameter_finder import ParameterFinder
 import numpy as np
 

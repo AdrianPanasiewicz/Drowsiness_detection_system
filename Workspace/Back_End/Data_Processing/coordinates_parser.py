@@ -1,6 +1,8 @@
+from unittest.mock import right
+
 import numpy as np
 from mediapipe.python.solutions.face_mesh_connections import FACEMESH_LIPS, FACEMESH_LEFT_EYE, FACEMESH_RIGHT_EYE
-from mediapipe.python.solutions.face_mesh_connections import FACEMESH_FACE_OVAL , FACEMESH_LEFT_IRIS, FACEMESH_RIGHT_IRIS
+from mediapipe.python.solutions.face_mesh_connections import FACEMESH_LEFT_IRIS, FACEMESH_RIGHT_IRIS
 from Workspace.Utilities import Utils
 
 class CoordinatesParser:
@@ -8,9 +10,8 @@ class CoordinatesParser:
         self._left_eye_indices = Utils.frozenset_to_list(FACEMESH_LEFT_EYE)
         self._right_eye_indices = Utils.frozenset_to_list(FACEMESH_RIGHT_EYE)
         self._mouth_indices = Utils.frozenset_to_list(FACEMESH_LIPS)
-        self._left_iris_indices = list()
-        self._right_iris_indices = list()
-        self._face_oval_indices = list()
+        self._left_iris_indices = Utils.frozenset_to_list(FACEMESH_LEFT_IRIS)
+        self._right_iris_indices = Utils.frozenset_to_list(FACEMESH_RIGHT_IRIS)
 
     def find_left_eye(self, results) -> list:
         """
@@ -125,3 +126,51 @@ class CoordinatesParser:
             z_list_all.append(z_list)
 
         return x_list_all, y_list_all, z_list_all
+
+    def find_left_iris(self, results) -> list:
+        """
+        #TODO Poprawić dokumentacje
+
+        :param results: Wynik działania funkcji process od mediapipe
+        :type results:
+        :return: Lista z list bibliotek ze współrzędnymi punktów orientacyjnych lewego oka
+        :rtype: list
+        """
+
+        all_left_iris_coords = list()
+        if results.multi_face_landmarks:
+            for face_mesh in results.multi_face_landmarks:
+                left_iris_coords = list()
+                for line in self._left_iris_indices:
+                    line_coords = dict()
+                    for number, index in enumerate(line, start=1):
+                        line_coords.update({number: face_mesh.landmark[index]})
+                    left_iris_coords.append(line_coords)
+
+                all_left_iris_coords.append(left_iris_coords)
+
+        return all_left_iris_coords
+    
+    def find_right_iris(self, results) -> list:
+        """
+        #TODO Poprawić dokumentacje
+
+        :param results: Wynik działania funkcji process od mediapipe
+        :type results:
+        :return: Lista z list bibliotek ze współrzędnymi punktów orientacyjnych lewego oka
+        :rtype: list
+        """
+
+        all_right_iris_coords = list()
+        if results.multi_face_landmarks:
+            for face_mesh in results.multi_face_landmarks:
+                left_iris_coords = list()
+                for line in self._right_iris_indices:
+                    line_coords = dict()
+                    for number, index in enumerate(line, start=1):
+                        line_coords.update({number: face_mesh.landmark[index]})
+                    left_iris_coords.append(line_coords)
+
+                all_right_iris_coords.append(left_iris_coords)
+
+        return all_right_iris_coords

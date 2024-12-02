@@ -25,7 +25,7 @@ class FaceAngleFinder(ParameterFinder):
         if face_coords.multi_face_landmarks:
             for face_mesh in face_coords.multi_face_landmarks:
                 for pair in self.face_oval_indices[0:-1]:
-                    face_angle = FaceAngleFinder.calculate_angle(face_mesh, pair)
+                    face_angle = FaceAngleFinder._calculate_angle(face_mesh, pair)
                     all_faces_face_angle = np.append(all_faces_face_angle, face_angle)
 
             face_angle = np.mean(all_faces_face_angle)
@@ -35,7 +35,7 @@ class FaceAngleFinder(ParameterFinder):
             return 0
 
     @staticmethod
-    def calculate_angle(face_mesh, pair):
+    def _calculate_angle(face_mesh, pair):
         """
 
 

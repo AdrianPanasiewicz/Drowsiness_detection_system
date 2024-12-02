@@ -106,9 +106,9 @@ class FacePlotter:
         elif key.upper() == "MOUTH":
             line_color = FacePlotter.format_rgb_string(160 - 50 * person_index,15 + 50 * person_index , 15 + 50 * person_index)
         elif key.upper() == "LEFT_IRIS":
-            line_color = FacePlotter.format_rgb_string(15,160 - 50 * person_index , 15 + 50 * person_index)
+            line_color = FacePlotter.format_rgb_string(15,15 + 50 * person_index , 15 + 50 * person_index)
         elif key.upper() == "RIGHT_IRIS":
-            line_color = FacePlotter.format_rgb_string(15 ,160 - 50 * person_index , 15 + 50 * person_index)
+            line_color = FacePlotter.format_rgb_string(15 ,15 + 50 * person_index , 15 + 50 * person_index)
         else:
             line_color = FacePlotter.format_rgb_string(150 - 50 * person_index,15 , 150 - 50 * person_index)
 

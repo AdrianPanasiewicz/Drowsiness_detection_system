@@ -13,7 +13,7 @@ class JawnFinder(ParameterFinder):
 
     def find_parameter(self, face_coords):
         jawn_ratios = self._find_jawn_ratio(face_coords)
-        is_jawning = self.detect_yawn(jawn_ratios)
+        is_jawning = self._detect_yawn(jawn_ratios)
         return is_jawning, self.yawn_counter
 
 
@@ -32,10 +32,10 @@ class JawnFinder(ParameterFinder):
         if face_coords.multi_face_landmarks:
             for face_mesh in face_coords.multi_face_landmarks:
                 for pair in self.mouth_indices[0:-1]:
-                    delta_ver_dist = JawnFinder.calculate_distance(face_mesh, pair)
+                    delta_ver_dist = JawnFinder._calculate_distance(face_mesh, pair)
                     all_delta_ver_dist = np.append(all_delta_ver_dist, delta_ver_dist)
 
-                hor_distance = self.calculate_distance(face_mesh, self.mouth_indices[-1])
+                hor_distance = self._calculate_distance(face_mesh, self.mouth_indices[-1])
 
                 all_delta_ver_dist = np.array(all_delta_ver_dist)
                 mean_ver_distance = np.mean(all_delta_ver_dist)
@@ -48,7 +48,7 @@ class JawnFinder(ParameterFinder):
             return [0]
 
     @staticmethod
-    def calculate_distance(face_mesh, pair):
+    def _calculate_distance(face_mesh, pair):
         """
 
 
@@ -66,7 +66,7 @@ class JawnFinder(ParameterFinder):
         delta_ver_dist = ((y2 - y1) ** 2 + (x2 - x1) ** 2) ** 0.5
         return delta_ver_dist
 
-    def detect_yawn(self, yawn_ratio):
+    def _detect_yawn(self, yawn_ratio):
         """
 
         :return:
