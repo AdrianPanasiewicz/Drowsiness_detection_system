@@ -74,6 +74,7 @@ class PerclosFinder(ParameterFinder):
                 mean_ver_distance = np.mean(all_delta_ver_dist)
 
                 eye_closure_ratio = mean_ver_distance / hor_distance
+                eye_closure_ratio = np.clip(eye_closure_ratio, 0, 1)
                 all_faces_ecr.append(eye_closure_ratio)
 
         return all_faces_ecr

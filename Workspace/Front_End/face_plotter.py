@@ -57,7 +57,7 @@ class FacePlotter:
                 if len(key) > 0:
                     for person_index in range(len(self.x_dict_all[key])):
                         for line_index in range(len(self.x_dict_all[key][person_index])):
-                            line_color = self.select_color(key, person_index)
+                            line_color = self._select_color(key, person_index)
                             x_vals = self.x_dict_all[key][person_index][line_index]
                             y_vals = self.y_dict_all[key][person_index][line_index]
                             z_vals = self.z_dict_all[key][person_index][line_index]
@@ -69,7 +69,7 @@ class FacePlotter:
             plt.pause(0.1)
 
     @staticmethod
-    def select_color(key: str, person_index: int) -> str:
+    def _select_color(key: str, person_index: int) -> str:
         """
         Metoda odpowiedzialna za wybór koloru, w którym dana część twarzy jest rysowana.
         :param key: Nazwa fragmentu twarzy
@@ -80,25 +80,25 @@ class FacePlotter:
         :rtype: str
         """
         if key.upper() == "LEFT_EYE":
-            line_color = FacePlotter.format_rgb_string(15 + 50 * person_index, 15 + 50 * person_index,
-                                                       160 - 50 * person_index)
+            line_color = FacePlotter._format_rgb_string(15 + 50 * person_index, 15 + 50 * person_index,
+                                                        160 - 50 * person_index)
         elif key.upper() == "RIGHT_EYE":
-            line_color = FacePlotter.format_rgb_string(15 + 50 * person_index, 15 + 50 * person_index,
-                                                       160 - 50 * person_index)
+            line_color = FacePlotter._format_rgb_string(15 + 50 * person_index, 15 + 50 * person_index,
+                                                        160 - 50 * person_index)
         elif key.upper() == "MOUTH":
-            line_color = FacePlotter.format_rgb_string(160 - 50 * person_index, 15 + 50 * person_index,
-                                                       15 + 50 * person_index)
+            line_color = FacePlotter._format_rgb_string(160 - 50 * person_index, 15 + 50 * person_index,
+                                                        15 + 50 * person_index)
         elif key.upper() == "LEFT_IRIS":
-            line_color = FacePlotter.format_rgb_string(15, 15 + 50 * person_index, 15 + 50 * person_index)
+            line_color = FacePlotter._format_rgb_string(15, 15 + 50 * person_index, 15 + 50 * person_index)
         elif key.upper() == "RIGHT_IRIS":
-            line_color = FacePlotter.format_rgb_string(15, 15 + 50 * person_index, 15 + 50 * person_index)
+            line_color = FacePlotter._format_rgb_string(15, 15 + 50 * person_index, 15 + 50 * person_index)
         else:
-            line_color = FacePlotter.format_rgb_string(150 - 50 * person_index, 15, 150 - 50 * person_index)
+            line_color = FacePlotter._format_rgb_string(150 - 50 * person_index, 15, 150 - 50 * person_index)
 
         return line_color
 
     @staticmethod
-    def format_rgb_string(rval: int, gval: int, bval: int) -> str:
+    def _format_rgb_string(rval: int, gval: int, bval: int) -> str:
         """
         Metoda do utworzenia string rgb na podstawie żądanych wartości koloru czerwonego, zielonego i niebieskiego.
         :param rval: Wartość koloru czerwonego

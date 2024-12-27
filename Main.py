@@ -9,10 +9,10 @@ if __name__ == "__main__":
     text_color = [240, 10, 10]
     text_parameters = (cv2.FONT_HERSHEY_DUPLEX,1,text_color,2)
 
-    # model_loader = ModelLoader()
-    # models = model_loader.load_models()
+    model_loader = ModelLoader()
+    models = model_loader.load_models()
 
-    parameter_calculator = CoordinatesParser()
+    coordinates_parser = CoordinatesParser()
     face_plotter = face_plotter.FacePlotter()
     os.system('cls')
 
@@ -38,8 +38,8 @@ if __name__ == "__main__":
         fps = Utils.calculate_fps()
 
         ret, frame = camera.read()
-        # processed_frame_MM = image_processor.preprocess_image1(frame, *crop_size)
-        processed_frame, face_mesh_coords = image_processor.preprocess_image2(frame)
+        processed_frame_MM = image_processor.crop_and_convert_to_gray(frame, *crop_size)
+        processed_frame, face_mesh_coords = image_processor.process_face_image(frame)
 
         perclos = find_perclos.find_parameter(face_mesh_coords)
         is_jawning, jawn_counter = find_jawn.find_parameter(face_mesh_coords)
@@ -49,10 +49,11 @@ if __name__ == "__main__":
         # os.system('cls')
         # print(f"PERCLOS =\t{round(perclos,2)}")
 
-        Utils.plot_face(parameter_calculator, face_plotter, face_mesh_coords)
+        Utils.render_face_coordinates(coordinates_parser, face_plotter, face_mesh_coords)
 
-        # output = models["Emotion_model"].predict(processed_frame_MM)
-        cv2.putText(processed_frame, f"Emotion: (Deactivated)", (15, 30), *text_parameters)
+        output = models["Emotion_model"].predict(processed_frame_MM)
+        
+        cv2.putText(processed_frame, f"Emotion: {output[0]}", (15, 30), *text_parameters)
         cv2.putText(processed_frame, f"Saccade speed: {round(saccade_velocity, 3)}", (15, 60), *text_parameters)
         cv2.putText(processed_frame, f"PERCLOS: {int(perclos*100)}%", (15, 90), *text_parameters)
         cv2.putText(processed_frame, f"Jawn: {is_jawning}", (15, 120), *text_parameters)

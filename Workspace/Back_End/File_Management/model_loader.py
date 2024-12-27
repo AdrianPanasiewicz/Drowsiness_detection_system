@@ -57,8 +57,9 @@ class ModelLoader:
 
     def load_models(self) -> dict:
         """
+        Wczytanie parametrów modeli
 
-        :return:
+        :return: Parametry modeli
         :rtype: tuple
         """
         loaded_models = dict()

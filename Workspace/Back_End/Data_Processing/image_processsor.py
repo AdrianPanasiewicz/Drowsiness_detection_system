@@ -12,10 +12,10 @@ class ImageProcessor:
         """
         Konstruktor klasy ImageProcessor
         """
-        self._mpDraw = solutions.drawing_utils
-        self._mpFaceMesh = solutions.face_mesh
-        self._faceMesh = self._mpFaceMesh.FaceMesh(max_num_faces=1, refine_landmarks=True)
-        self._drawSpec = self._mpDraw.DrawingSpec(thickness=1, circle_radius=1, color=(0, 255, 0))
+        self._mp_draw = solutions.drawing_utils
+        self._mp_face_mesh = solutions.face_mesh
+        self._face_mesh = self._mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True)
+        self._draw_spec = self._mp_draw.DrawingSpec(thickness=1, circle_radius=1, color=(0, 255, 0))
 
     @staticmethod
     def _crop_image(image, crop_width: int, crop_height: int) -> np.ndarray:
@@ -71,17 +71,17 @@ class ImageProcessor:
         :rtype: np.ndarray, Union z OpenCV
         """
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        results = self._faceMesh.process(image_rgb)
+        results = self._face_mesh.process(image_rgb)
 
         # Jeśli znaleziono twarz, to na obrazie zostaną zaznaczone jej wskaźniki
         if results.multi_face_landmarks:
             for face_landmarks in results.multi_face_landmarks:
-                self._mpDraw.draw_landmarks(image, face_landmarks, self._mpFaceMesh.FACEMESH_CONTOURS, self._drawSpec,
-                                            self._drawSpec)
+                self._mp_draw.draw_landmarks(image, face_landmarks, self._mp_face_mesh.FACEMESH_CONTOURS, self._draw_spec,
+                                             self._draw_spec)
 
         return image, results
 
-    def preprocess_image1(self, image, crop_width: int, crop_length: int) -> np.ndarray:
+    def crop_and_convert_to_gray(self, image, crop_width: int, crop_length: int) -> np.ndarray:
         """
         Metoda do wstępnego przetwarzania obrazu
 
@@ -102,7 +102,7 @@ class ImageProcessor:
         # Zwrócenie przetworzonego obrazu
         return gray_image
 
-    def preprocess_image2(self, image):
+    def process_face_image(self, image):
         """
         Interfejs do przetwarzania wskaźników na twarzy
 

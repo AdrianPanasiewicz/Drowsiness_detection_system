@@ -18,19 +18,19 @@ class CoordinatesParser:
         self._left_iris_indices = Utils.frozenset_to_list(FACEMESH_LEFT_IRIS)
         self._right_iris_indices = Utils.frozenset_to_list(FACEMESH_RIGHT_IRIS)
 
-    def find_left_eye(self, results) -> list:
+    def find_left_eye(self, face_coords_results) -> list:
         """
         Metoda do zawracania współrzędnych punktów orientacyjnych lewego oka.
         
-        :param results: Wynik działania funkcji process od mediapipe
-        :type results: Union
+        :param face_coords_results: Wynik działania funkcji process od mediapipe
+        :type face_coords_results: Union
         :return: Lista z list bibliotek ze współrzędnymi punktów orientacyjnych lewego oka
         :rtype: list
         """
 
         all_left_eye_coords = list()
-        if results.multi_face_landmarks:
-            for face_mesh in results.multi_face_landmarks:
+        if face_coords_results.multi_face_landmarks:
+            for face_mesh in face_coords_results.multi_face_landmarks:
                 left_eye_coords = list()
                 for line in self._left_eye_indices:
                     line_coords = dict()
@@ -42,19 +42,19 @@ class CoordinatesParser:
 
         return all_left_eye_coords
 
-    def find_right_eye(self, results) -> list:
+    def find_right_eye(self, face_coords_results) -> list:
         """
         Metoda do zawracania współrzędnych punktów orientacyjnych prawego oka.
 
-        :param results: Wynik działania funkcji process od mediapipe
-        :type results: Union
+        :param face_coords_results: Wynik działania funkcji process od mediapipe
+        :type face_coords_results: Union
         :return: Lista z list bibliotek ze współrzędnymi punktów orientacyjnych prawego oka
         :rtype: List
         """
 
         all_right_eye_coords = list()
-        if results.multi_face_landmarks:
-            for face_mesh in results.multi_face_landmarks:
+        if face_coords_results.multi_face_landmarks:
+            for face_mesh in face_coords_results.multi_face_landmarks:
                 right_eye_coords = list()
                 for line in self._right_eye_indices:
                     line_coords = dict()
@@ -66,19 +66,19 @@ class CoordinatesParser:
 
         return all_right_eye_coords
 
-    def find_mouth(self, results) -> list:
+    def find_mouth(self, face_coords_results) -> list:
         """
         Metoda do zawracania współrzędnych punktów orientacyjnych ust.
 
-        :param results: Wynik działania funkcji process od mediapipe
-        :type results: Union
+        :param face_coords_results: Wynik działania funkcji process od mediapipe
+        :type face_coords_results: Union
         :return: Lista z list bibliotek ze współrzędnymi punktów orientacyjnych ust
         :rtype: List
         """
 
         all_mouth_coords = list()
-        if results.multi_face_landmarks:
-            for face_mesh in results.multi_face_landmarks:
+        if face_coords_results.multi_face_landmarks:
+            for face_mesh in face_coords_results.multi_face_landmarks:
                 mouth_coords = list()
                 for line in self._mouth_indices:
                     line_coords = dict()
@@ -91,7 +91,7 @@ class CoordinatesParser:
         return all_mouth_coords
 
     @staticmethod
-    def get_coordinates(face_elem_coords: list) -> tuple:
+    def coords_to_plot_form(face_elem_coords: list) -> tuple:
         """
         Metoda do uzyskania pozycji punktów w postaci trzech list dla osi x, y oraz z.
 
@@ -133,19 +133,19 @@ class CoordinatesParser:
 
         return x_list_all, y_list_all, z_list_all
 
-    def find_left_iris(self, results) -> list:
+    def find_left_iris(self, face_coords_results) -> list:
         """
         Metoda do zawracania współrzędnych punktów orientacyjnych lewej tęczówki.
 
-        :param results: Wynik działania funkcji process od mediapipe
-        :type results: Union
+        :param face_coords_results: Wynik działania funkcji process od mediapipe
+        :type face_coords_results: Union
         :return: Lista z list bibliotek ze współrzędnymi punktów orientacyjnych lewej tęczówki
         :rtype: List
         """
 
         all_left_iris_coords = list()
-        if results.multi_face_landmarks:
-            for face_mesh in results.multi_face_landmarks:
+        if face_coords_results.multi_face_landmarks:
+            for face_mesh in face_coords_results.multi_face_landmarks:
                 left_iris_coords = list()
                 for line in self._left_iris_indices:
                     line_coords = dict()
@@ -157,19 +157,19 @@ class CoordinatesParser:
 
         return all_left_iris_coords
 
-    def find_right_iris(self, results) -> list:
+    def find_right_iris(self, face_coords_results) -> list:
         """
         Metoda do zawracania współrzędnych punktów orientacyjnych prawej tęczówki.
 
-        :param results: Wynik działania funkcji process od mediapipe
-        :type results: Union
+        :param face_coords_results: Wynik działania funkcji process od mediapipe
+        :type face_coords_results: Union
         :return: Lista z list bibliotek ze współrzędnymi punktów orientacyjnych prawej tęczówki
         :rtype: List
         """
 
         all_right_iris_coords = list()
-        if results.multi_face_landmarks:
-            for face_mesh in results.multi_face_landmarks:
+        if face_coords_results.multi_face_landmarks:
+            for face_mesh in face_coords_results.multi_face_landmarks:
                 left_iris_coords = list()
                 for line in self._right_iris_indices:
                     line_coords = dict()

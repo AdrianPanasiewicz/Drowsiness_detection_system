@@ -6,7 +6,7 @@ from .parameter_finder import ParameterFinder
 class JawnFinder(ParameterFinder):
     """Klasa odpowiedzialna za wykrycie ziewania."""
 
-    def __init__(self, yawn_threshold):
+    def __init__(self, yawn_threshold: float):
         """Konstruktor klasy JawnFinder."""
         self.mouth_indices = np.array([[37, 84], [0, 17], [267, 314], [62, 29]])
         self.yawn_counter = 0
@@ -23,7 +23,7 @@ class JawnFinder(ParameterFinder):
         :rtype: tuple
         """
         jawn_ratios = self._find_jawn_ratio(face_coords)
-        is_jawning = self._detect_yawn(jawn_ratios)
+        is_jawning = self._check_for_yawn(jawn_ratios)
         return is_jawning, self.yawn_counter
 
     def _find_jawn_ratio(self, face_coords) -> list:
@@ -75,7 +75,7 @@ class JawnFinder(ParameterFinder):
         delta_ver_dist = ((y2 - y1) ** 2 + (x2 - x1) ** 2) ** 0.5
         return delta_ver_dist
 
-    def _detect_yawn(self, yawn_ratio: float) -> bool:
+    def _check_for_yawn(self, yawn_ratio: float) -> bool:
         """
         Metoda do wykrywania, czy użytkownik obecnie ziewa oraz zliczania liczby ziewnięć.
         :return: Wartość bool, czy użytkownik aktualnie ziewa

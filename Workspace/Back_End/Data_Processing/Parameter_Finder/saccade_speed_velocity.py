@@ -71,7 +71,7 @@ class SaccadeVelocityFinder(ParameterFinder):
         else:
             return 0
 
-    def _calculate_velocity(self, face_mesh, landmark_ind: tuple, index: int, iris_selection: int,
+    def _calculate_velocity(self, face_mesh, landmark_ind: tuple, index: int, select_iris: int,
                             adjust_to_landmarks: list) -> float:
         """
         Metoda do wyznaczania pochodnej z aktualnej i poprzedniej pozycji wskaźnika na twarzy
@@ -82,14 +82,14 @@ class SaccadeVelocityFinder(ParameterFinder):
         :type landmark_ind: int
         :param index: Indeks do pamięci dla wskaźnika
         :type index: int
-        :param iris_selection: Zmienna do wyboru tęczówki, dla której będzie obliczana prędkość
-        :type iris_selection: int
+        :param select_iris: Zmienna do wyboru tęczówki, dla której będzie obliczana prędkość
+        :type select_iris: int
         :param adjust_to_landmarks: Poprawka, aby uniezależnić prędkość ruchu sakkadowego od ruchu głowy
         :type adjust_to_landmarks: list
         :return: Prędkość
         :rtype: float
         """
-        prev_state = self.iris_previous_state[iris_selection][index]
+        prev_state = self.iris_previous_state[select_iris][index]
         x2 = prev_state[0]
         y2 = prev_state[1]
         z2 = prev_state[2]
@@ -106,34 +106,34 @@ class SaccadeVelocityFinder(ParameterFinder):
         delta_t = tick1 - tick2
 
         distance = (delta_x ** 2 + delta_y ** 2 + delta_z ** 2) ** 0.5
-        adjust_by_distance = self.adjust_speed_to_landmarks(adjust_to_landmarks, iris_selection, face_mesh)
+        adjust_by_distance = self.adjust_speed_to_landmarks(adjust_to_landmarks, select_iris, face_mesh)
         adjusted_distance = distance - adjust_by_distance
 
         saccade_velocity = adjusted_distance / delta_t
 
-        self.iris_previous_state[iris_selection][index][0] = x1
-        self.iris_previous_state[iris_selection][index][1] = y1
-        self.iris_previous_state[iris_selection][index][2] = z1
-        self.iris_previous_state[iris_selection][index][3] = tick1
+        self.iris_previous_state[select_iris][index][0] = x1
+        self.iris_previous_state[select_iris][index][1] = y1
+        self.iris_previous_state[select_iris][index][2] = z1
+        self.iris_previous_state[select_iris][index][3] = tick1
 
         return saccade_velocity
 
-    def adjust_speed_to_landmarks(self, adjust_to_landmarks: list, iris_selection: int, face_mesh) -> float:
+    def adjust_speed_to_landmarks(self, landmark_indices: list, select_iris: int, face_mesh) -> float:
         """
         Metoda do uniezależnienia prędkości ruchów sakkadowych od ruchu głowy
 
-        :param adjust_to_landmarks: Wskaźniki, względem których zostanie uniezależniona prędkość ruchu sakkadowych.
-        :type adjust_to_landmarks: list
-        :param iris_selection: Zmienna do wyboru tęczówki, dla której będzie obliczana prędkość
-        :type iris_selection: int
+        :param landmark_indices: Wskaźniki, względem których zostanie uniezależniona prędkość ruchu sakkadowych.
+        :type landmark_indices: list
+        :param select_iris: Zmienna do wyboru tęczówki, dla której będzie obliczana prędkość
+        :type select_iris: int
         :param face_mesh: Pojedyńcza twarz znaleziona przez mediapipe
         :type face_mesh: Union
         :return: Dystans pokonany przez punkt
         :rtype: float
         """
         distances = np.zeros(2)
-        for index, landmark_ind in enumerate(adjust_to_landmarks, start=0):
-            prev_state = self.landmark_previous_state[iris_selection][index]
+        for index, landmark_ind in enumerate(landmark_indices, start=0):
+            prev_state = self.landmark_previous_state[select_iris][index]
             x2 = prev_state[0]
             y2 = prev_state[1]
             z2 = prev_state[2]

@@ -45,12 +45,12 @@ class Utils:
         return fixed_path
 
     @classmethod
-    def plot_face(cls, parameter_calculator, face_plotter, face_mesh_coords):
+    def render_face_coordinates(cls, coordinates_parser, face_plotter, face_mesh_coords):
         """
         Metoda do stworzenia wykresu 3d wskaźników na twarzy.
 
-        :param parameter_calculator: Klasa do wyliczania współrzędnych na podstawie wyniku z mediapipe
-        :type parameter_calculator: CoordinatesParser
+        :param coordinates_parser: Klasa do wyliczania współrzędnych na podstawie wyniku z mediapipe
+        :type coordinates_parser: CoordinatesParser
         :param face_plotter: Klasa do tworzenia wykresów na podstawie wyniku z mediapipe
         :type face_plotter: FacePlotter
         :param face_mesh_coords: Wynik wykrycia wskaźników na twarzy z mediapipe
@@ -58,18 +58,18 @@ class Utils:
         """
 
         # Zdobycie współrzędnych odpowiednich fragmentów twarzy
-        coords_left_eye = parameter_calculator.find_left_eye(face_mesh_coords)
-        coords_right_eye = parameter_calculator.find_right_eye(face_mesh_coords)
-        coords_mouth = parameter_calculator.find_mouth(face_mesh_coords)
-        coords_left_iris = parameter_calculator.find_left_iris(face_mesh_coords)
-        coords_right_iris = parameter_calculator.find_right_iris(face_mesh_coords)
+        coords_left_eye = coordinates_parser.find_left_eye(face_mesh_coords)
+        coords_right_eye = coordinates_parser.find_right_eye(face_mesh_coords)
+        coords_mouth = coordinates_parser.find_mouth(face_mesh_coords)
+        coords_left_iris = coordinates_parser.find_left_iris(face_mesh_coords)
+        coords_right_iris = coordinates_parser.find_right_iris(face_mesh_coords)
 
         # Uzyskanie listy współrzędnych w formie, która biblioteka matplotlib może przetworzyć
-        x_list_1, y_list_1, z_list_1 = parameter_calculator.get_coordinates(coords_left_eye)
-        x_list_2, y_list_2, z_list_2 = parameter_calculator.get_coordinates(coords_right_eye)
-        x_list_3, y_list_3, z_list_3 = parameter_calculator.get_coordinates(coords_mouth)
-        x_list_4, y_list_4, z_list_4 = parameter_calculator.get_coordinates(coords_left_iris)
-        x_list_5, y_list_5, z_list_5 = parameter_calculator.get_coordinates(coords_right_iris)
+        x_list_1, y_list_1, z_list_1 = coordinates_parser.coords_to_plot_form(coords_left_eye)
+        x_list_2, y_list_2, z_list_2 = coordinates_parser.coords_to_plot_form(coords_right_eye)
+        x_list_3, y_list_3, z_list_3 = coordinates_parser.coords_to_plot_form(coords_mouth)
+        x_list_4, y_list_4, z_list_4 = coordinates_parser.coords_to_plot_form(coords_left_iris)
+        x_list_5, y_list_5, z_list_5 = coordinates_parser.coords_to_plot_form(coords_right_iris)
 
         # Aktualizacja wykresy o obecną pozycję twarzy
         face_plotter.update_xyz_coords(x_list_1, y_list_1, z_list_1, "LEFT_EYE")
@@ -79,13 +79,13 @@ class Utils:
         face_plotter.update_xyz_coords(x_list_5, y_list_5, z_list_5, "RIGHT_IRIS")
 
     @classmethod
-    def frozenset_to_list(cls, face_frag: frozenset) -> list:
+    def frozenset_to_list(cls, frozen_connections: frozenset) -> list:
         """
         Funkcja przekształcająca obiekt typu frozenset z biblioteki MediaPipe, zawierający indeksy określonego
         fragmentu twarzy, na listę sąsiadujących ze sobą punktów, które razem tworzą linię.
 
-        :param face_frag: Zmienna pochodząca z biblioteki mediapipe z pliku face_mesh_connections
-        :type face_frag: frozenset
+        :param frozen_connections: Zmienna pochodząca z biblioteki mediapipe z pliku face_mesh_connections
+        :type frozen_connections: frozenset
         :return: Lista z liniami, które mogą być wykreślone przez Matplotlib
         :rtype: list
         """
@@ -93,7 +93,7 @@ class Utils:
         all_face_lines = list()
 
         # Dla każdego połączenia szuka, czy istnieje punkt, z którym może go połączyć, a jak nie to tworzy nową listę.
-        for tuple_connection in face_frag:
+        for tuple_connection in frozen_connections:
             is_added = False
             exists_in_two = False
             add_loc = []
