@@ -12,43 +12,47 @@ class FaceAngleFinder(ParameterFinder):
         """Konstruktor klasy FaceAngleFinder."""
         self.face_oval_indices = np.array([[109, 148], [10, 152], [338, 377]])
 
-    def find_parameter(self, face_coords) -> float:
+    def find_parameter(self, face_coords) -> tuple:
         """
         Metoda do zwrócenia kątu pochylenia twarzy.
 
         :param face_coords: Wynik działania funkcji process od mediapipe
         :type face_coords: Union
-        :return: Kąt pochylenia twarzy
-        :rtype: float
+        :return: Kąt Eulera pochylenia twarzy
+        :rtype: tuple
         """
-        face_angle = self._find_face_angle(face_coords)
-        return face_angle
+        roll, pitch = self._find_face_angle(face_coords)
+        return roll, pitch
 
-    def _find_face_angle(self, face_coords) -> float:
+    def _find_face_angle(self, face_coords) -> tuple:
         """
         Metoda do wyliczenia kątu pochylenia twarzy.
         :param face_coords: Wynik działania funkcji process od mediapipe
         :type face_coords: Union
-        :return: Kąt pochylenia twarzy
-        :rtype: float
+        :return: Wybrane kąty Eulera pochylenia głowy
+        :rtype: tuple
         """
-        all_faces_face_angle = np.array([])
-
         # Dla każdej pary wskaźników na twarzy obliczenie ich pochylenia względem pionu i obliczenie średniej z nich
         if face_coords.multi_face_landmarks:
             for face_mesh in face_coords.multi_face_landmarks:
-                for pair in self.face_oval_indices[0:-1]:
-                    face_angle = FaceAngleFinder._calculate_angle(face_mesh, pair)
-                    all_faces_face_angle = np.append(all_faces_face_angle, face_angle)
+                roll_single_estimates = np.array([])
+                pitch_single_estimates = np.array([])
+                yaw_single_estimates = np.array([])
 
-            face_angle = np.mean(all_faces_face_angle)
-            return face_angle
+                for pair in self.face_oval_indices[0:-1]:
+                    roll, pitch = FaceAngleFinder._calculate_euler_angles(face_mesh, pair)
+                    roll_single_estimates = np.append(roll_single_estimates, roll)
+                    pitch_single_estimates = np.append(pitch_single_estimates, pitch)
+
+            roll = np.mean(roll_single_estimates)
+            pitch = np.mean(pitch_single_estimates)
+            return roll, pitch
 
         else:
-            return 0
+            return 0,0
 
     @staticmethod
-    def _calculate_angle(face_mesh, pair: np.array) -> float:
+    def _calculate_euler_angles(face_mesh, pair: np.array) -> tuple:
         """
         Metoda do wyznaczenia pochylenia dwóch wskaźników twarzy.
 
@@ -56,8 +60,8 @@ class FaceAngleFinder(ParameterFinder):
         :type face_mesh: Union
         :param pair: Para wskaźników na twarzy, względem której zostanie wyliczone ich pochylenie względem pionu
         :type pair: np.array
-        :return: Kąt pochylenia pary punktów względem pionu
-        :rtype: float
+        :return: Wybrane kąty Eulera pochylenia głowy
+        :rtype: tuple
         """
         x2 = face_mesh.landmark[pair[0]].x
         y2 = face_mesh.landmark[pair[0]].y
@@ -69,9 +73,9 @@ class FaceAngleFinder(ParameterFinder):
 
         delta_x = x2 - x1
         delta_y = y2 - y1
-        delta_z = abs(z2 - z1)
+        delta_z = z2 - z1
 
-        denominator = (delta_x * delta_x + delta_y * delta_y) ** (1 / 2)
-        face_angle = math.atan2(delta_z, denominator) * 180 / math.pi * delta_y / abs(delta_y)
+        roll = math.atan2(abs(delta_z), delta_x) * 180 / math.pi - 90
+        pitch = math.atan2(delta_z, abs(delta_y)) * 180 / math.pi
 
-        return face_angle
+        return roll, pitch

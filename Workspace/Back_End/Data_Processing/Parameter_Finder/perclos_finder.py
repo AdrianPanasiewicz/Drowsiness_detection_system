@@ -92,7 +92,7 @@ class PerclosFinder(ParameterFinder):
         :return: Parametr PERCLOS
         :rtype: float
         """
-        period = 300  # frames
+        period = 900  # frames
         # Usuń najstarszą klatkę i dodaj obecną, jeśli okres jest dłuższy niż 10s
         if len(self.ecr_per_face_memory[memory_key]) >= period:  # TODO Okres*FPS
             oldest_frame = min(self.ecr_per_face_memory[memory_key].keys())
