@@ -14,6 +14,7 @@ if __name__ == "__main__":
 
     coordinates_parser = CoordinatesParser()
     face_plotter = face_plotter.FacePlotter()
+    sql_saver = SqlSaver()
     os.system('cls')
 
     # Initialise camera for video capture
@@ -26,7 +27,7 @@ if __name__ == "__main__":
         raise TypeError('Nie udało się uzyskać dostępu do kamery lub kamera nie istnieje') from e
 
     perclos_threshold = 0.4
-    yawn_threshold = 0.6
+    yawn_threshold = 0.55
 
     find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
     find_jawn = jawn_finder.JawnFinder(yawn_threshold)
@@ -40,8 +41,8 @@ if __name__ == "__main__":
         ret, frame = camera.read()
         processed_frame, face_mesh_coords = image_processor.process_face_image(frame)
 
-        perclos = find_perclos.find_parameter(face_mesh_coords)
-        is_jawning, jawn_counter = find_jawn.find_parameter(face_mesh_coords)
+        perclos, ear = find_perclos.find_parameter(face_mesh_coords)
+        is_jawning, jawn_counter, mar = find_jawn.find_parameter(face_mesh_coords)
         roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
         saccade_velocity = find_saccade_velocity.find_parameter(face_mesh_coords)
 
@@ -59,16 +60,16 @@ if __name__ == "__main__":
         cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 240), *text_parameters)
         cv2.imshow('Drowsiness detection', processed_frame)
 
-        # if len(saccs) >= 20:
-        #     saccs = np.pitch(saccs, -1)
-        #     saccs[-1] = saccade_velocity
-        # else:
-        #     saccs = np.append(saccs, saccade_velocity)
-        #
-        # plt.axis([0, 20, -30, 0])
-        # plt.plot(saccs)
-        # plt.pause(0.001)
-        # plt.clf()
+        packet = {
+            "MAR": perclos,
+            "Yawning": is_jawning,
+            "Roll": roll,
+            "Pitch": pitch,
+            "EAR": ear,
+            "PERCLOS": perclos
+        }
+
+        sql_saver.save_to_csv(packet)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

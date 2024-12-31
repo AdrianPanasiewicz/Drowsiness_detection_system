@@ -1,12 +1,18 @@
 import pathlib
 import time
-
+import pandas as pd
 import numpy as np
 
 
 class Utils:
     """
-    Klasa z różnymi pożytecznymi funkcjami.
+    Zapewnia metody pomocnicze do różnych zadań obliczeniowych i wizualizacyjnych.
+    Ta klasa jest zaprojektowana do przetwarzania danych w konkretnym kontekście,
+    takim jak obliczanie FPS, pakowanie danych, renderowanie współrzędnych twarzy
+    oraz konwersja frozenset na listy.
+
+    :ivar tick_memory: Utrzymuje ruchomą pamięć znaczników czasu, służącą do obliczania FPS.
+    :type tick_memory: numpy.ndarray
     """
 
     tick_memory = np.zeros(15)  # Zmienna stosowana do stworzenia średniej kroczącej
@@ -14,10 +20,13 @@ class Utils:
     @classmethod
     def calculate_fps(cls) -> np.floating:
         """
-        Metoda do obliczania wartości klatek na sekundę.
+        Calculates and returns the frames per second (FPS) based on the tick timestamps
+        stored in the memory. This is implemented using a moving average method.
+        The method calculates intermediate FPS values for each time interval in the tick
+        memory, then averages these values to produce the final FPS.
 
-        :return: Ilość klatek na sekundę.
-        :rtype: np.floating
+        :rtype: numpy.floating
+        :return: Calculated frames per second as a floating-point number.
         """
 
         current_tick = time.time()
@@ -36,25 +45,36 @@ class Utils:
     @classmethod
     def fix_pathlib(cls) -> type(pathlib.WindowsPath):
         """
-        Obejście błędu, który uniemożliwia tworzenie instancji PosixPath na systemie operacyjnym
-        Więcej na temat tego problemu na https://github.com/ultralytics/yolov5/issues/10240
-        :return: Ścieżka PosixPath
-        :rtype: WindowsPath
+        Oblicza i zwraca liczbę klatek na sekundę (FPS) na podstawie znaczników czasu
+        zapisanych w pamięci. Implementacja opiera się na metodzie średniej ruchomej.
+
+        Metoda oblicza pośrednie wartości FPS dla każdego przedziału czasowego
+        z pamięci znaczników, a następnie uśrednia te wartości, aby uzyskać ostateczne FPS.
+
+        :rtype: numpy.floating
+        :return: Obliczona liczba klatek na sekundę
         """
         fixed_path = pathlib.WindowsPath
         return fixed_path
 
+
     @classmethod
     def render_face_coordinates(cls, coordinates_parser, face_plotter, face_mesh_coords):
         """
-        Metoda do stworzenia wykresu 3d wskaźników na twarzy.
+        Przetwarza i renderuje współrzędne twarzy poprzez wyodrębnienie konkretnych cech twarzy
+        oraz aktualizację wykresu współrzędnymi, aby wizualizować strukturę twarzy w przestrzeni 3D.
+        Metoda identyfikuje punkty charakterystyczne twarzy, takie jak oczy, usta i tęczówki,
+        konwertuje ich współrzędne na formę zgodną z wykresem, a następnie aktualizuje system wykresów
+        z bieżącą pozycją.
 
-        :param coordinates_parser: Klasa do wyliczania współrzędnych na podstawie wyniku z mediapipe
+        :param coordinates_parser: Obiekt umożliwiający wyodrębnianie i konwersję współrzędnych cech twarzy.
         :type coordinates_parser: CoordinatesParser
-        :param face_plotter: Klasa do tworzenia wykresów na podstawie wyniku z mediapipe
+        :param face_plotter: Obiekt odpowiedzialny za aktualizację i renderowanie współrzędnych twarzy na wykresie.
         :type face_plotter: FacePlotter
-        :param face_mesh_coords: Wynik wykrycia wskaźników na twarzy z mediapipe
-        :type face_mesh_coords: Union
+        :param face_mesh_coords: Pełny zestaw współrzędnych siatki twarzy, z którego wyodrębniane są konkretne cechy.
+        :type face_mesh_coords: list
+        :return: Zaktualizowany wykres z uwzględnieniem pozycji struktury twarzy.
+        :rtype: None
         """
 
         # Zdobycie współrzędnych odpowiednich fragmentów twarzy
@@ -81,12 +101,16 @@ class Utils:
     @classmethod
     def frozenset_to_list(cls, frozen_connections: frozenset) -> list:
         """
-        Funkcja przekształcająca obiekt typu frozenset z biblioteki MediaPipe, zawierający indeksy określonego
-        fragmentu twarzy, na listę sąsiadujących ze sobą punktów, które razem tworzą linię.
+        Konwertuje frozenset połączeń na listę połączonych linii. Każde połączenie w frozenset
+        powinno być tuple dwóch elementów, reprezentującą punkty końcowe. Funkcja przetwarza
+        te połączenia, aby pogrupować połączone elementy w oddzielne listy, łącząc połączenia
+        tam, gdzie to możliwe, aby utworzyć dłuższe, ciągłe linie.
 
-        :param frozen_connections: Zmienna pochodząca z biblioteki mediapipe z pliku face_mesh_connections
+        :param frozen_connections: Zbiór frozenset tuples, gdzie każda krotka reprezentuje
+            połączenie między dwoma punktami.
         :type frozen_connections: frozenset
-        :return: Lista z liniami, które mogą być wykreślone przez Matplotlib
+        :return: Posortowana lista zawierająca listy połączonych linii. Każda wewnętrzna lista
+            reprezentuje sekwencję połączonych punktów.
         :rtype: list
         """
 

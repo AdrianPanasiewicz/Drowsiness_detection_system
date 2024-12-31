@@ -24,7 +24,7 @@ class JawnFinder(ParameterFinder):
         """
         jawn_ratios = self._find_jawn_ratio(face_coords)
         is_jawning = self._check_for_yawn(jawn_ratios)
-        return is_jawning, self.yawn_counter
+        return is_jawning, self.yawn_counter, jawn_ratios[0] if face_coords.multi_face_landmarks else 0.0
 
     def _find_jawn_ratio(self, face_coords) -> list:
         """
