@@ -1,5 +1,47 @@
 from Workspace import *
+import time
 if __name__ == "__main__":
+
+    def second_task():
+        while True:
+            fps = Utils.calculate_fps()
+
+            ret, frame = camera.read()
+            processed_frame, face_mesh_coords = image_processor.process_face_image(frame)
+
+            perclos, ear = find_perclos.find_parameter(face_mesh_coords)
+            is_jawning, jawn_counter, mar = find_jawn.find_parameter(face_mesh_coords)
+            roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
+            saccade_velocity = find_saccade_velocity.find_parameter(face_mesh_coords)
+
+            # Utils.render_face_coordinates(coordinates_parser, face_plotter, face_mesh_coords)
+
+            cv2.putText(processed_frame, f"Saccade speed: {round(saccade_velocity, 3)}", (15, 60), *text_parameters)
+            cv2.putText(processed_frame, f"PERCLOS: {int(perclos*100)}%", (15, 90), *text_parameters)
+            cv2.putText(processed_frame, f"Jawn: {is_jawning}", (15, 120), *text_parameters)
+            cv2.putText(processed_frame, f"Jawn counter: {jawn_counter}", (15, 150), *text_parameters)
+            cv2.putText(processed_frame, f"Roll: {round(roll, 2)}", (15, 180), *text_parameters)
+            cv2.putText(processed_frame, f"Pitch: {round(pitch, 2)}", (15, 210), *text_parameters)
+            cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 240), *text_parameters)
+            cv2.imshow('Drowsiness detection', processed_frame)
+
+            packet = {
+                "MAR": perclos,
+                "Yawning": is_jawning,
+                "Roll": roll,
+                "Pitch": pitch,
+                "EAR": ear,
+                "PERCLOS": perclos
+            }
+
+            gui_display.update_parameters(mar, is_jawning, roll, pitch, ear, perclos)
+
+            sql_saver.save_to_csv(packet)
+
+            # Nacisnij 'q', aby wyjsc
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                gui.running = False
+                break
 
     pathlib.PosixPath = Utils.fix_pathlib()
 
@@ -13,7 +55,7 @@ if __name__ == "__main__":
     # models = model_loader.load_models()
 
     coordinates_parser = CoordinatesParser()
-    face_plotter = face_plotter.FacePlotter()
+    # face_plotter = face_plotter.FacePlotter() #TODO Poprawić to, aby też się wyświetlało w GUI
     sql_saver = SqlSaver()
     os.system('cls')
 
@@ -35,47 +77,14 @@ if __name__ == "__main__":
     find_saccade_velocity = saccade_speed_velocity.SaccadeVelocityFinder()
     # saccs = np.zeros(1)
 
-    while True:
-        fps = Utils.calculate_fps()
+    gui_display = GUI()
+    second_threat = threading.Thread(target=second_task, daemon=True)
+    second_threat.start()
 
-        ret, frame = camera.read()
-        processed_frame, face_mesh_coords = image_processor.process_face_image(frame)
+    gui_display.start()
 
-        perclos, ear = find_perclos.find_parameter(face_mesh_coords)
-        is_jawning, jawn_counter, mar = find_jawn.find_parameter(face_mesh_coords)
-        roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
-        saccade_velocity = find_saccade_velocity.find_parameter(face_mesh_coords)
-
-        # os.system('cls')
-        # print(f"PERCLOS =\t{round(perclos,2)}")
-
-        Utils.render_face_coordinates(coordinates_parser, face_plotter, face_mesh_coords)
-
-        cv2.putText(processed_frame, f"Saccade speed: {round(saccade_velocity, 3)}", (15, 60), *text_parameters)
-        cv2.putText(processed_frame, f"PERCLOS: {int(perclos*100)}%", (15, 90), *text_parameters)
-        cv2.putText(processed_frame, f"Jawn: {is_jawning}", (15, 120), *text_parameters)
-        cv2.putText(processed_frame, f"Jawn counter: {jawn_counter}", (15, 150), *text_parameters)
-        cv2.putText(processed_frame, f"Roll: {round(roll, 2)}", (15, 180), *text_parameters)
-        cv2.putText(processed_frame, f"Pitch: {round(pitch, 2)}", (15, 210), *text_parameters)
-        cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 240), *text_parameters)
-        cv2.imshow('Drowsiness detection', processed_frame)
-
-        packet = {
-            "MAR": perclos,
-            "Yawning": is_jawning,
-            "Roll": roll,
-            "Pitch": pitch,
-            "EAR": ear,
-            "PERCLOS": perclos
-        }
-
-        sql_saver.save_to_csv(packet)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    camera.release()
-    cv2.destroyAllWindows()
+    # camera.release()
+    # cv2.destroyAllWindows()
 
 
 
