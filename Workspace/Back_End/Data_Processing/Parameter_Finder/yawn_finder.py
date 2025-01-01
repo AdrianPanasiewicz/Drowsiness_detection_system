@@ -3,11 +3,11 @@ import numpy as np
 from .parameter_finder import ParameterFinder
 
 
-class JawnFinder(ParameterFinder):
+class YawnFinder(ParameterFinder):
     """Klasa odpowiedzialna za wykrycie ziewania."""
 
     def __init__(self, yawn_threshold: float):
-        """Konstruktor klasy JawnFinder."""
+        """Konstruktor klasy YawnFinder."""
         self.mouth_indices = np.array([[37, 84], [0, 17], [267, 314], [62, 29]])
         self.yawn_counter = 0
         self.yawn_memory = np.array(np.zeros(10), dtype='bool')
@@ -22,11 +22,11 @@ class JawnFinder(ParameterFinder):
         :return: Flaga, czy osoba ziewa oraz liczbę wykrytych ziewnięć
         :rtype: tuple
         """
-        jawn_ratios = self._find_jawn_ratio(face_coords)
-        is_jawning = self._check_for_yawn(jawn_ratios)
-        return is_jawning, self.yawn_counter, jawn_ratios[0] if face_coords.multi_face_landmarks else 0.0
+        yawn_ratios = self._find_yawn_ratio(face_coords)
+        is_jawning = self._check_for_yawn(yawn_ratios)
+        return is_jawning, self.yawn_counter, yawn_ratios[0] if face_coords.multi_face_landmarks else 0.0
 
-    def _find_jawn_ratio(self, face_coords) -> list:
+    def _find_yawn_ratio(self, face_coords) -> list:
         """
         Metoda do obliczania stosunku wysokości otwarcia ust do jej szerokości.
 
@@ -36,12 +36,12 @@ class JawnFinder(ParameterFinder):
         :rtype: list
         """
         all_delta_ver_dist = np.array([])
-        all_faces_jawn_ratio = list()
+        all_faces_yawn_ratio = list()
 
         if face_coords.multi_face_landmarks:
             for face_mesh in face_coords.multi_face_landmarks:
                 for pair in self.mouth_indices[0:-1]:
-                    delta_ver_dist = JawnFinder._calculate_distance(face_mesh, pair)
+                    delta_ver_dist = YawnFinder._calculate_distance(face_mesh, pair)
                     all_delta_ver_dist = np.append(all_delta_ver_dist, delta_ver_dist)
 
                 hor_distance = self._calculate_distance(face_mesh, self.mouth_indices[-1])
@@ -50,9 +50,9 @@ class JawnFinder(ParameterFinder):
                 mean_ver_distance = np.mean(all_delta_ver_dist)
 
                 jawn_ratio = mean_ver_distance / hor_distance
-                all_faces_jawn_ratio.append(jawn_ratio)
+                all_faces_yawn_ratio.append(jawn_ratio)
 
-            return all_faces_jawn_ratio
+            return all_faces_yawn_ratio
         else:
             return [0]
 

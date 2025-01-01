@@ -132,7 +132,7 @@ class PerclosFinder(ParameterFinder):
 
         perclos = 0
         for _, pair in self.ear_per_face_memory[memory_key].items():
-            mean_from_pair = pair[0] + pair[1]
+            mean_from_pair = (pair[0] + pair[1])/2
             if mean_from_pair < self.perclos_threshold:
                 perclos += 1
 

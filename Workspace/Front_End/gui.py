@@ -4,7 +4,7 @@ import queue
 class GUI:
     def __init__(self):
         self.running = True
-        self.data_queue = queue.Queue()  # Thread-safe queue to share data between threads
+        self.data_queue = queue.Queue()
 
         self.initialize_gui()
 
@@ -25,30 +25,32 @@ class GUI:
         self.window.title("Drowsiness Detection System")
         self.window.resizable(False, False)
 
-    def update_parameters(self, mar, is_jawning, roll, pitch, ear, perclos):
-        # Add data to the queue to update the GUI
-        self.data_queue.put((mar, is_jawning, roll, pitch, ear, perclos))
+    def update_parameters(self, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps):
+        self.data_queue.put((mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps))
 
     def update_gui(self):
-        # Update GUI elements with data from the queue
         try:
             while not self.data_queue.empty():
-                mar, is_jawning, roll, pitch, ear, perclos = self.data_queue.get_nowait()
+                mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps = self.data_queue.get_nowait()
                 self.params_label.configure(
                     text=(
-                        f"PERCLOS: {round(perclos * 100, 2)}%\n"
-                        f"EAR: {round(ear, 2)}\n"
-                        f"Yawning: {'Yes' if is_jawning else 'No'}\n"
+                        "Parametry:\n"
+                        f"MAR: {round(mar, 2)}\n"
+                        f"Ziewanie: {'Obecne' if is_yawning else 'Brak'}\n"
                         f"Roll: {round(roll, 2)}\n"
                         f"Pitch: {round(pitch, 2)}\n"
+                        f"EAR: {round(ear, 2)}\n"
+                        f"PERCLOS: {round(perclos * 100, 2)}%\n"
+                        f"Licznik ziewnięć: {round(yawn_counter, 2)}\n"
+                        f"\n"
+                        f"FPS: {int(fps)}\n"
                     )
                 )
         except queue.Empty:
             pass
 
-        # Schedule the next update
         if self.running:
-            self.window.after(100, self.update_gui)  # Update every 100ms
+            self.window.after(100, self.update_gui)
 
     def start(self):
         self.window.mainloop()

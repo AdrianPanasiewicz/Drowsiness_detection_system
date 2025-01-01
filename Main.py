@@ -10,19 +10,12 @@ if __name__ == "__main__":
             processed_frame, face_mesh_coords = image_processor.process_face_image(frame)
 
             perclos, ear = find_perclos.find_parameter(face_mesh_coords)
-            is_jawning, jawn_counter, mar = find_jawn.find_parameter(face_mesh_coords)
+            is_jawning, yawn_counter, mar = find_yawn.find_parameter(face_mesh_coords)
             roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
             saccade_velocity = find_saccade_velocity.find_parameter(face_mesh_coords)
 
             # Utils.render_face_coordinates(coordinates_parser, face_plotter, face_mesh_coords)
 
-            cv2.putText(processed_frame, f"Saccade speed: {round(saccade_velocity, 3)}", (15, 60), *text_parameters)
-            cv2.putText(processed_frame, f"PERCLOS: {int(perclos*100)}%", (15, 90), *text_parameters)
-            cv2.putText(processed_frame, f"Jawn: {is_jawning}", (15, 120), *text_parameters)
-            cv2.putText(processed_frame, f"Jawn counter: {jawn_counter}", (15, 150), *text_parameters)
-            cv2.putText(processed_frame, f"Roll: {round(roll, 2)}", (15, 180), *text_parameters)
-            cv2.putText(processed_frame, f"Pitch: {round(pitch, 2)}", (15, 210), *text_parameters)
-            cv2.putText(processed_frame, f"FPS: {int(fps)}", (15, 240), *text_parameters)
             cv2.imshow('Drowsiness detection', processed_frame)
 
             packet = {
@@ -34,7 +27,7 @@ if __name__ == "__main__":
                 "PERCLOS": perclos
             }
 
-            gui_display.update_parameters(mar, is_jawning, roll, pitch, ear, perclos)
+            gui_display.update_parameters(mar, is_jawning, roll, pitch, ear, perclos, yawn_counter, fps)
 
             sql_saver.save_to_csv(packet)
 
@@ -68,11 +61,11 @@ if __name__ == "__main__":
     except TypeError as e:
         raise TypeError('Nie udało się uzyskać dostępu do kamery lub kamera nie istnieje') from e
 
-    perclos_threshold = 0.4
+    perclos_threshold = 0.2
     yawn_threshold = 0.55
 
     find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
-    find_jawn = jawn_finder.JawnFinder(yawn_threshold)
+    find_yawn = yawn_finder.YawnFinder(yawn_threshold)
     find_face_tilt = face_angle_finder.FaceAngleFinder()
     find_saccade_velocity = saccade_speed_velocity.SaccadeVelocityFinder()
     # saccs = np.zeros(1)
