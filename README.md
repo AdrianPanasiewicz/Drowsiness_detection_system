@@ -1,6 +1,6 @@
-# Real-Time Drowsiness and Emotion Detection
+# Real-Time drowsiness detection system
 
-This project aims to develop a real-time system that detects drowsiness and emotions based on facial data. Designed for applications in driver safety, workplace monitoring, and human-computer interaction, the system uses advanced computer vision techniques and machine learning algorithms to process video feed and analyze facial expressions for signs of drowsiness and specific emotions.
+This project is an implementation of a real-time system that detects drowsiness based on facial data. Designed for applications in driver safety, the system uses computer vision techniques and machine learning algorithms to process video feed and analyze facial expressions for signs of drowsiness.
 
 ## Table of Contents
 - [Features](#features)
@@ -14,7 +14,6 @@ This project aims to develop a real-time system that detects drowsiness and emot
 
 ## Features
 - **Drowsiness Detection**: Detects signs of fatigue or drowsiness in real-time using facial landmarks and eye-blink rates.
-- **Emotion Recognition**: Identifies emotions such as happiness, sadness, anger, surprise, etc.
 - **Live Video Feed Processing**: Processes live video feeds from webcams or IP cameras.
 - **Alerts**: Configurable alerts for specific thresholds (e.g., when drowsiness is detected).
 - **Data Logging**: Records detection events for further analysis and review.
@@ -23,12 +22,11 @@ This project aims to develop a real-time system that detects drowsiness and emot
 - **Python**
 - **OpenCV**: For real-time image processing and face detection.
 - **Mediapipe**: For facial landmark detection.
-- **Fastai**: Used for emotion detection with a CNN model.
 
 ## Installation
 1. Clone this repository:
     ```bash
-    git clone https://github.com/AdrianPanasiewicz/Real-time-drowsiness-and-emotion-detection.git
+    git clone https://github.com/AdrianPanasiewicz/Drowsiness_detection_system.git
     ```
 2. Install the required packages:
     ```bash
@@ -48,6 +46,7 @@ This project aims to develop a real-time system that detects drowsiness and emot
 - **/Back_End**: Classes for managing the flow and processing of information.
 - **/Front_End**: GUI responsible for showcasing the results
 - **/Resources**: Contains pre-trained models for emotion detection.
+- **/Results**: Results of the program saved in csv files.
 - **/Utilities**: Helper functions for data processing and logging.
 
 
