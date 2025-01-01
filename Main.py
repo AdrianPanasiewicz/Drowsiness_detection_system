@@ -1,5 +1,6 @@
 from Workspace import *
-import time
+import threading
+
 if __name__ == "__main__":
 
     def analyze_face_parameters():
@@ -12,9 +13,10 @@ if __name__ == "__main__":
             perclos, ear = find_perclos.find_parameter(face_mesh_coords)
             is_jawning, yawn_counter, mar = find_yawn.find_parameter(face_mesh_coords)
             roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
-            saccade_velocity = find_saccade_velocity.find_parameter(face_mesh_coords)
 
-            # Utils.render_face_coordinates(coordinates_parser, face_plotter, face_mesh_coords)
+            face_plotter_inst = gui_display.get_face_plotter()
+            Utils.render_face_coordinates(coordinates_parser, face_plotter_inst, face_mesh_coords)
+            gui_display.set_face_plotter(face_plotter_inst)
 
             packet = {
                 "MAR": perclos,
@@ -35,15 +37,12 @@ if __name__ == "__main__":
                 break
 
     pathlib.PosixPath = Utils.fix_pathlib()
-
-    # Załadowanie klasy ImageProcessor do przetwarzania obrazu
     image_processor = ImageProcessor()
 
     # model_loader = ModelLoader()
     # models = model_loader.load_models()
 
     coordinates_parser = CoordinatesParser()
-    # face_plotter = face_plotter.FacePlotter() #TODO Poprawić to, aby też się wyświetlało w GUI
     sql_saver = SqlSaver()
     os.system('cls')
 

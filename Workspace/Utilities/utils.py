@@ -1,8 +1,6 @@
 import pathlib
 import time
-import pandas as pd
 import numpy as np
-
 
 class Utils:
     """
@@ -59,7 +57,7 @@ class Utils:
 
 
     @classmethod
-    def render_face_coordinates(cls, coordinates_parser, face_plotter, face_mesh_coords):
+    def render_face_coordinates(cls, coordinates_parser, face_plt, face_mesh_coords):
         """
         Przetwarza i renderuje współrzędne twarzy poprzez wyodrębnienie konkretnych cech twarzy
         oraz aktualizację wykresu współrzędnymi, aby wizualizować strukturę twarzy w przestrzeni 3D.
@@ -69,8 +67,8 @@ class Utils:
 
         :param coordinates_parser: Obiekt umożliwiający wyodrębnianie i konwersję współrzędnych cech twarzy.
         :type coordinates_parser: CoordinatesParser
-        :param face_plotter: Obiekt odpowiedzialny za aktualizację i renderowanie współrzędnych twarzy na wykresie.
-        :type face_plotter: FacePlotter
+        :param face_plt: Obiekt odpowiedzialny za aktualizację i renderowanie współrzędnych twarzy na wykresie.
+        :type face_plt: FacePlotter
         :param face_mesh_coords: Pełny zestaw współrzędnych siatki twarzy, z którego wyodrębniane są konkretne cechy.
         :type face_mesh_coords: list
         :return: Zaktualizowany wykres z uwzględnieniem pozycji struktury twarzy.
@@ -92,11 +90,11 @@ class Utils:
         x_list_5, y_list_5, z_list_5 = coordinates_parser.coords_to_plot_form(coords_right_iris)
 
         # Aktualizacja wykresy o obecną pozycję twarzy
-        face_plotter.update_xyz_coords(x_list_1, y_list_1, z_list_1, "LEFT_EYE")
-        face_plotter.update_xyz_coords(x_list_2, y_list_2, z_list_2, "RIGHT_EYE")
-        face_plotter.update_xyz_coords(x_list_3, y_list_3, z_list_3, "MOUTH")
-        face_plotter.update_xyz_coords(x_list_4, y_list_4, z_list_4, "LEFT_IRIS")
-        face_plotter.update_xyz_coords(x_list_5, y_list_5, z_list_5, "RIGHT_IRIS")
+        face_plt.update_xyz_coords(x_list_1, y_list_1, z_list_1, "LEFT_EYE")
+        face_plt.update_xyz_coords(x_list_2, y_list_2, z_list_2, "RIGHT_EYE")
+        face_plt.update_xyz_coords(x_list_3, y_list_3, z_list_3, "MOUTH")
+        face_plt.update_xyz_coords(x_list_4, y_list_4, z_list_4, "LEFT_IRIS")
+        face_plt.update_xyz_coords(x_list_5, y_list_5, z_list_5, "RIGHT_IRIS")
 
     @classmethod
     def frozenset_to_list(cls, frozen_connections: frozenset) -> list:

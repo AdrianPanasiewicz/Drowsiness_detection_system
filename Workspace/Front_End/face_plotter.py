@@ -1,10 +1,5 @@
-import threading
-
-import matplotlib.pyplot as plt
-
-
 class FacePlotter:
-    def __init__(self):
+    def __init__(self, figure, axes3d, canvas, root):
         """
         Inicjalizacja klasy FacePlotter.
         """
@@ -13,8 +8,19 @@ class FacePlotter:
         self.y_dict_all = dict()
         self.z_dict_all = dict()
 
-        plot_thread = threading.Thread(target=self.animate_plot, daemon=True)
-        plot_thread.start()
+        self.fig = figure
+        self.ax = axes3d
+        self.canvas = canvas
+        self.root = root
+
+        self._animation_running = False
+
+    def start_animation(self, interval=100):
+        self._animation_running = True
+        self._update_plot(interval)
+
+    def stop_animation(self):
+        self._animation_running = False
 
     def update_xyz_coords(self, x_list: list, y_list: list, z_list: list, name: str):
         """
@@ -34,39 +40,34 @@ class FacePlotter:
         self.y_dict_all.update({name: y_list})
         self.z_dict_all.update({name: z_list})
 
-    def animate_plot(self):
-        """
-        Metoda do stworzenia i aktualizowania wyświetlania się wykresu w czasie rzeczywistym,
-        na którym wyświetlana jest twarz.
+    def _update_plot(self, interval=33):
         """
 
-        # Stworzenie kontenera do wyświetlania wykresu
-        fig = plt.figure()
-        ax = fig.add_subplot(projection='3d')
-        plt.show(block=False)
+        """
+        if not self._animation_running:
+            return
 
-        # Aktualizowanie wyświetlania wykresu w czasie rzeczywistym
-        while True:
-            # Wyczyszczenie z wyświetlanych punktów z wykresu
-            ax.cla()
-            ax.set(xlim=(0, 1), ylim=(-0.5, 0.5), zlim=(0, 1),
-                   xlabel='Width', ylabel='Depth', zlabel='Height')
+        self.ax.cla()
+        self.ax.set(
+            xlim=(0, 1),
+            ylim=(-0.5, 0.5),
+            zlim=(0, 1),
+            xlabel='Width',
+            ylabel='Depth',
+            zlabel='Height'
+        )
 
-            # Wykreślenie punktów z nowymi współrzędnymi
-            for key in self.x_dict_all:
-                if len(key) > 0:
-                    for person_index in range(len(self.x_dict_all[key])):
-                        for line_index in range(len(self.x_dict_all[key][person_index])):
-                            line_color = self._select_color(key, person_index)
-                            x_vals = self.x_dict_all[key][person_index][line_index]
-                            y_vals = self.y_dict_all[key][person_index][line_index]
-                            z_vals = self.z_dict_all[key][person_index][line_index]
-                            ax.plot(x_vals, z_vals, y_vals, color=line_color)
-                else:
-                    # W przypadku, gdy nnie wykryto danego fragmentu na twarzy, to pozostawiono wykres pustym
-                    ax.plot([], [], [])
+        for key in self.x_dict_all:
+            for person_index in range(len(self.x_dict_all[key])):
+                for line_index in range(len(self.x_dict_all[key][person_index])):
+                    line_color = self._select_color(key, person_index)
+                    x_vals = self.x_dict_all[key][person_index][line_index]
+                    y_vals = self.y_dict_all[key][person_index][line_index]
+                    z_vals = self.z_dict_all[key][person_index][line_index]
+                    self.ax.plot(x_vals, z_vals, y_vals, color=line_color)
 
-            plt.pause(0.1)
+        self.canvas.draw()
+        self.root.after(interval, self._update_plot, interval)
 
     @staticmethod
     def _select_color(key: str, person_index: int) -> str:
