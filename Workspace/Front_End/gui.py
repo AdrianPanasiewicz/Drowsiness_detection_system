@@ -80,14 +80,40 @@ class GUI:
     def show_info_window(self):
         info_window = customtkinter.CTkToplevel(self.window)
         info_window.title("O programie")
-        info_window.geometry("400x300")
+        info_window.geometry("500x380")
 
         info_window.attributes("-topmost", 1)
 
+        info_test = """        Autor: Adrian Paweł Panasiewicz  
+        Tytuł pracy dyplomowej: Projekt wstępny systemu bezpieczeństwa do wykrywania 
+                                                 senności u pilotów bezzałogowych 
+                                                 statków powietrznych  
+        
+        Cel aplikacji:
+        Aplikacja została zaprojektowana w celu monitorowania stanu senności 
+        operatorów dronów w czasie rzeczywistym. Analizuje obraz z kamery 
+        i wyświetla parametry takie jak PERCLOS, ziewanie, czy pochylenie 
+        głowy. W przypadku wykrycia krytycznych wartości system generuje 
+        alerty dźwiękowe i wizualne.
+        
+        Jak obsługiwać aplikację:
+        1. Uruchom plik wykonywalny aplikacji na systemie Windows 10/11.
+        2. Podłącz kamerę zgodną z minimalnymi wymaganiami (720p, 30 FPS).
+        3. Ustaw kamerę tak, aby rejestrowała twarz operatora w dobrych 
+           warunkach oświetleniowych.
+        4. Obserwuj dane wyjściowe na interfejsie graficznym aplikacji (GUI).
+        
+        Uwaga:
+        - Aplikacja obsługuje tylko jedną twarz w kadrze.
+        - Stabilne oświetlenie i minimalne ruchy kamery poprawiają dokładność analizy.
+        - Wszelkie dane są zapisywane w bazie danych, umożliwiając późniejszą analizę.
+        """
+
         info_label = customtkinter.CTkLabel(
             info_window,
-            text="Tutaj możesz napisać, co robi Twój program, jak działa,\n"
-                 "i co należy zrobić, by go używać. Dodaj dowolne informacje."
+            text=info_test,
+            justify="left",
+            font=("Roboto", 12)
         )
         info_label.pack(pady=20, padx=20)
 
