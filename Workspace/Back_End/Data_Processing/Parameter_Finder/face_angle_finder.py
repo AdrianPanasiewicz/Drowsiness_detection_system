@@ -1,24 +1,30 @@
 import math
-
 import numpy as np
-
 from .parameter_finder import ParameterFinder
 
 
 class FaceAngleFinder(ParameterFinder):
-    """Klasa odpowiedzialna za znalezienie kąta pochylenia twarzy."""
+    """
+    Klasa odpowiedzialna za wyznaczanie kąta pochylenia twarzy (roll i pitch)
+    na podstawie wybranych wskaźników (landmarków) twarzy pochodzących z MediaPipe.
+    """
 
     def __init__(self):
-        """Konstruktor klasy FaceAngleFinder."""
+        """
+        Inicjalizuje obiekt FaceAngleFinder poprzez zdefiniowanie zbioru par indeksów,
+        na których będzie przeprowadzana analiza kąta pochylenia twarzy.
+        """
         self.face_oval_indices = np.array([[109, 148], [10, 152], [338, 377]])
 
     def find_parameter(self, face_coords) -> tuple:
         """
-        Metoda do zwrócenia kątu pochylenia twarzy.
+        Główna metoda interfejsu ParameterFinder. Zwraca kąt przechylenia (roll)
+        i kąt pochylenia (pitch) twarzy dla przekazanego zestawu współrzędnych.
 
-        :param face_coords: Wynik działania funkcji process od mediapipe
-        :type face_coords: Union
-        :return: Kąt Eulera pochylenia twarzy
+        :param face_coords: Wynik działania biblioteki MediaPipe, zawierający
+                            obiekt multi_face_landmarks z wykrytymi punktami twarzy.
+        :type face_coords: Union[mediapipe.python.solutions.face_mesh.FaceMesh, ...] lub podobny
+        :return: Krotka (roll, pitch) wyrażona w stopniach.
         :rtype: tuple
         """
         roll, pitch = self._find_face_angle(face_coords)
@@ -26,41 +32,42 @@ class FaceAngleFinder(ParameterFinder):
 
     def _find_face_angle(self, face_coords) -> tuple:
         """
-        Metoda do wyliczenia kątu pochylenia twarzy.
-        :param face_coords: Wynik działania funkcji process od mediapipe
-        :type face_coords: Union
-        :return: Wybrane kąty Eulera pochylenia głowy
+        Oblicza średnie wartości kąta przechylenia (roll) i pochylenia (pitch) twarzy,
+        bazując na parach punktów w `self.face_oval_indices`.
+
+        :param face_coords: Obiekt zawierający listę wykrytych twarzy (face_mesh).
+        :type face_coords: Union[mediapipe.python.solutions.face_mesh.FaceMesh, ...] lub podobny
+        :return: Krotka (roll, pitch) w stopniach (lub (0, 0), jeśli nie wykryto żadnej twarzy).
         :rtype: tuple
         """
-        # Dla każdej pary wskaźników na twarzy obliczenie ich pochylenia względem pionu i obliczenie średniej z nich
         if face_coords.multi_face_landmarks:
             for face_mesh in face_coords.multi_face_landmarks:
-                roll_single_estimates = np.array([])
-                pitch_single_estimates = np.array([])
-                yaw_single_estimates = np.array([])
+                roll_estimates = []
+                pitch_estimates = []
 
+                # Pobieranie kątów dla każdej pary wskaźników zdefiniowanej w face_oval_indices
                 for pair in self.face_oval_indices[0:-1]:
-                    roll, pitch = FaceAngleFinder._calculate_euler_angles(face_mesh, pair)
-                    roll_single_estimates = np.append(roll_single_estimates, roll)
-                    pitch_single_estimates = np.append(pitch_single_estimates, pitch)
+                    roll_val, pitch_val = self._calculate_euler_angles(face_mesh, pair)
+                    roll_estimates.append(roll_val)
+                    pitch_estimates.append(pitch_val)
 
-            roll = np.mean(roll_single_estimates)
-            pitch = np.mean(pitch_single_estimates)
-            return roll, pitch
-
+            roll_mean = np.mean(roll_estimates)
+            pitch_mean = np.mean(pitch_estimates)
+            return roll_mean, pitch_mean
         else:
-            return 0,0
+            return 0, 0
 
     @staticmethod
     def _calculate_euler_angles(face_mesh, pair: np.array) -> tuple:
         """
-        Metoda do wyznaczenia pochylenia dwóch wskaźników twarzy.
+        Na podstawie dwóch wskaźników (landmarków) twarzy oblicza kąt przechylenia (roll)
+        oraz kąt pochylenia (pitch) w stopniach.
 
-        :param face_mesh: Pojedyńcza twarz znaleziona przez mediapipe
-        :type face_mesh: Union
-        :param pair: Para wskaźników na twarzy, względem której zostanie wyliczone ich pochylenie względem pionu
+        :param face_mesh: Pojedynczy obiekt reprezentujący twarz (z multi_face_landmarks).
+        :type face_mesh: mediapipe.framework.formats.landmark_pb2.NormalizedLandmarkList lub podobny
+        :param pair: Tablica zawierająca dwa indeksy landmarków.
         :type pair: np.array
-        :return: Wybrane kąty Eulera pochylenia głowy
+        :return: Krotka (roll, pitch) w stopniach.
         :rtype: tuple
         """
         x2 = face_mesh.landmark[pair[0]].x
@@ -75,7 +82,8 @@ class FaceAngleFinder(ParameterFinder):
         delta_y = y2 - y1
         delta_z = z2 - z1
 
-        roll = math.atan2(abs(delta_z), delta_x) * 180 / math.pi - 90
-        pitch = math.atan2(delta_z, abs(delta_y)) * 180 / math.pi
+        # Obliczenia kątów w stopniach (atan2 zwraca wynik w radianach)
+        roll = math.atan2(abs(delta_z), delta_x) * 180.0 / math.pi - 90.0
+        pitch = math.atan2(delta_z, abs(delta_y)) * 180.0 / math.pi
 
         return roll, pitch

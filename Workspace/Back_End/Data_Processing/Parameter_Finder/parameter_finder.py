@@ -1,13 +1,22 @@
 import abc
 
 class ParameterFinder(metaclass=abc.ABCMeta):
-    """Klasa odpowiedzialna za znalezienie konkretnego parametru"""
+    """
+    Klasa abstrakcyjna odpowiedzialna za wyznaczanie konkretnego
+    parametru na podstawie współrzędnych twarzy.
+    """
+
     @abc.abstractmethod
     def __init__(self):
-        """Konstruktor klasy"""
+        """
+        Konstruktor klasy abstrakcyjnej ParameterFinder.
+        """
         pass
 
     @abc.abstractmethod
     def find_parameter(self, face_coords):
-        """Metoda do zwrócenia szukanego parametru na podstawie współrzędnych wskaźników na twarzy."""
+        """
+        Metoda abstrakcyjna do zwrócenia szukanego parametru
+        na podstawie wskaźników (landmarków) na twarzy.
+        """
         pass

@@ -1,14 +1,21 @@
 import numpy as np
-
 from .parameter_finder import ParameterFinder
 
-
 class PerclosFinder(ParameterFinder):
-    """Klasa do obliczania parametru PERCLOS"""
+    """
+    Klasa odpowiedzialna za obliczanie współczynnika PERCLOS (procent czasu, w którym
+    powieki są zamknięte) na podstawie wartości EAR (Eye Aspect Ratio) dla lewego i prawego oka.
+    """
 
-    def __init__(self, perclos_threshold):
-        """Konstruktor klasy PerclosFinder"""
+    def __init__(self, perclos_threshold: float):
+        """
+        Inicjalizuje obiekt klasy PerclosFinder, ustalając m.in. pary indeksów
+        niezbędne do obliczania EAR dla lewego i prawego oka oraz próg (threshold)
+        stosowany do wyznaczania PERCLOS.
 
+        :param perclos_threshold: Próg, poniżej którego oko uznawane jest za zamknięte.
+        :type perclos_threshold: float
+        """
         self.left_eye_indices = [(385, 380), (387, 373), (263, 362)]
         self.right_eye_indices = [(160, 144), (158, 153), (133, 33)]
         self.ear_per_face_memory = {1: {1: (0, 0)}}
@@ -17,20 +24,17 @@ class PerclosFinder(ParameterFinder):
 
     def find_parameter(self, face_coords) -> tuple:
         """
-        Określa specyficzne parametry, w tym PERCLOS oraz średnie EAR (Eye Aspect Ratio),
-        na podstawie podanych współrzędnych wykrytych punktów charakterystycznych twarzy.
-        PERCLOS jest obliczany przy użyciu wcześniej zapisanych metryk, jeśli nie zostaną
-        wykryte punkty charakterystyczne twarzy. Metoda zwraca dwie wyliczone metryki.
+        Oblicza dwa parametry związane z oczami:
+        1. PERCLOS (procent czasu, gdy oczy są zamknięte),
+        2. Średnią wartość EAR (Eye Aspect Ratio) obu oczu.
 
-        :param face_coords: Współrzędne punktów charakterystycznych twarzy wymagane do
-            obliczenia EAR i PERCLOS.
+        :param face_coords: Współrzędne twarzy z biblioteki MediaPipe (multi_face_landmarks).
         :type face_coords: Any
-        :return: Krotka zawierająca dwa elementy:
-            1. `perclos` (float): Obliczona wartość PERCLOS reprezentująca częstotliwość mrugania.
-            2. `mean_ear` (float): Średni Eye Aspect Ratio dla obu oczu.
+        :return: Krotka (perclos, mean_ear), gdzie:
+                 - perclos (float): Obliczony procent czasu zamknięcia powiek.
+                 - mean_ear (float): Średnie EAR (Eye Aspect Ratio) dla obu oczu.
         :rtype: tuple[float, float]
         """
-
         left_ear = self._find_eye_aspect_ratio(face_coords, self.left_eye_indices)
         right_ear = self._find_eye_aspect_ratio(face_coords, self.right_eye_indices)
 
@@ -47,51 +51,42 @@ class PerclosFinder(ParameterFinder):
     @staticmethod
     def _find_eye_aspect_ratio(face_coords, indices: list) -> list:
         """
-        Oblicza współczynnik Eye Aspect Ratio (EAR) dla podanego zestawu współrzędnych twarzy
-        i indeksów punktów charakterystycznych. Funkcja wykorzystuje określone punkty charakterystyczne
-        twarzy (indeksy) do obliczenia pionowych odległości oraz odległości poziomej,
-        a następnie wyprowadza wartość EAR dla wykrytych twarzy. Wartości EAR są ograniczone
-        do zakresu od 0 do 1 i odpowiadają każdej twarzy wykrytej w dostarczonych danych
-        o współrzędnych twarzy.
+        Oblicza Eye Aspect Ratio (EAR) dla zestawu twarzy na podstawie wskazanych
+        indeksów landmarków oczu. Wykorzystuje pary punktów pionowych i jedną
+        parę poziomą, by wyznaczyć proporcje (delta_y/delta_x).
 
-        :param face_coords: Punkty charakterystyczne twarzy oraz dane dotyczące wielu twarzy.
-            Zawiera informacje o punktach siatki twarzy wykorzystywane do obliczania
-            współczynników proporcji.
-        :type face_coords: `mediapipe.python.solutions.face_mesh`.
-        :param indices: Lista par indeksów punktów charakterystycznych dla wyrównania pionowego,
-            a także pojedynczej pary indeksów dla wyrównania poziomego wykorzystywanych
-            do obliczania odległości i proporcji.
+        :param face_coords: Obiekt multi_face_landmarks z biblioteką MediaPipe.
+        :type face_coords: mediapipe.python.solutions.face_mesh.FaceMesh lub podobny
+        :param indices: Lista krotek indeksów punktów:
+                        - kilka par pionowych (np. (385,380), (387,373))
+                        - jedna para pozioma (np. (263,362)).
         :type indices: list
-        :return: Lista współczynników Eye Aspect Ratio (EAR) dla wykrytych twarzy
-            w dostarczonych danych o współrzędnych twarzy.
+        :return: Lista zawierająca wartości EAR dla każdej wykrytej twarzy.
         :rtype: list
         """
-
-        all_delta_ver_dist = np.array([])
-        all_faces_ear = list()
-
+        all_faces_ear = []
         if face_coords.multi_face_landmarks:
             for face_mesh in face_coords.multi_face_landmarks:
-                for pair in indices[0:-1]:
+                all_delta_ver_dist = np.array([])
+                # Obliczanie odległości pionowych
+                for pair in indices[:-1]:
                     y2 = face_mesh.landmark[pair[0]].y
                     x2 = face_mesh.landmark[pair[0]].x
-
                     y1 = face_mesh.landmark[pair[1]].y
                     x1 = face_mesh.landmark[pair[1]].x
 
                     delta_ver_dist = ((y2 - y1) ** 2 + (x2 - x1) ** 2) ** 0.5
                     all_delta_ver_dist = np.append(all_delta_ver_dist, delta_ver_dist)
 
+                # Obliczanie odległości poziomej
                 y2 = face_mesh.landmark[indices[-1][0]].y
                 x2 = face_mesh.landmark[indices[-1][0]].x
-
                 y1 = face_mesh.landmark[indices[-1][1]].y
                 x1 = face_mesh.landmark[indices[-1][1]].x
                 hor_distance = ((y2 - y1) ** 2 + (x2 - x1) ** 2) ** 0.5
 
-                all_delta_ver_dist = np.array(all_delta_ver_dist)
+                # EAR = (średnia z pionowych) / pozioma
                 mean_ver_distance = np.mean(all_delta_ver_dist)
-
                 eye_aspect_ratio = mean_ver_distance / hor_distance
                 eye_aspect_ratio = np.clip(eye_aspect_ratio, 0, 1)
                 all_faces_ear.append(eye_aspect_ratio)
@@ -101,41 +96,38 @@ class PerclosFinder(ParameterFinder):
     def _calculate_perclos(self, left_eye_aspect_ratio: float, right_eye_aspect_ratio: float,
                            memory_key: int) -> float:
         """
-        Oblicza procent zamknięcia powiek (PERCLOS) dla konkretnej twarzy zidentyfikowanej
-        przez `memory_key`. Metoda działa, wykorzystując zapisane wartości współczynników
-        EAR (Eye Aspect Ratio) dla lewego i prawego oka, przechowując dane z ustalonej liczby
-        ostatnich klatek.
+        Oblicza współczynnik PERCLOS (procent czasu, gdy oczy są zamknięte), bazując na historii
+        odczytów EAR dla danej twarzy (zidentyfikowanej przez 'memory_key'). Dla każdej klatki
+        obliczana jest średnia EAR z obydwu oczu i porównywana z progiem (self.perclos_threshold).
 
-        Metoda zapewnia, że dane dla każdej twarzy nie przekraczają określonego okresu,
-        usuwając najstarsze dane przy dodawaniu nowych wartości. Oblicza wartość PERCLOS,
-        która jest proporcją klatek, w których średnia wartość współczynników EAR dla lewego
-        i prawego oka jest niższa od zdefiniowanego progu.
-
-        :param left_eye_aspect_ratio: Współczynnik EAR dla lewego oka
+        :param left_eye_aspect_ratio: EAR lewego oka.
         :type left_eye_aspect_ratio: float
-        :param right_eye_aspect_ratio: Współczynnik EAR dla prawego oka
+        :param right_eye_aspect_ratio: EAR prawego oka.
         :type right_eye_aspect_ratio: float
-        :param memory_key: Klucz identyfikujący konkretną twarz, dla której obliczany jest PERCLOS
+        :param memory_key: Unikalny identyfikator twarzy, dla której liczymy PERCLOS.
         :type memory_key: int
-        :return: Obliczona wartość PERCLOS
+        :return: Procent klatek, w których oczy były uznane za zamknięte.
         :rtype: float
         """
-        period = 900  # frames
-        # Usuń najstarszą klatkę i dodaj obecną, jeśli okres jest dłuższy niż 10s
-        if len(self.ear_per_face_memory[memory_key]) >= period:  # TODO Okres*FPS
+        period = 900  # liczba klatek uwzględnianych w pamięci (np. 900 ~ 30s przy 30 FPS)
+
+        # Usunięcie najstarszego wpisu, jeśli osiągnięto limit 'period'
+        if len(self.ear_per_face_memory[memory_key]) >= period:
             oldest_frame = min(self.ear_per_face_memory[memory_key].keys())
             del self.ear_per_face_memory[memory_key][oldest_frame]
 
+        # Dodanie nowego wpisu dla aktualnej klatki
         latest_frame = max(self.ear_per_face_memory[memory_key].keys())
         ecr_ratios = (left_eye_aspect_ratio, right_eye_aspect_ratio)
         self.ear_per_face_memory[memory_key].update({latest_frame + 1: ecr_ratios})
 
-        perclos = 0
+        # Zliczanie klatek, w których średnia EAR < próg (oczy zamknięte)
+        closed_count = 0
         for _, pair in self.ear_per_face_memory[memory_key].items():
-            mean_from_pair = (pair[0] + pair[1])/2
+            mean_from_pair = (pair[0] + pair[1]) / 2
             if mean_from_pair < self.perclos_threshold:
-                perclos += 1
+                closed_count += 1
 
-        perclos = perclos / period
-
+        # PERCLOS to odsetek (closed_count / period)
+        perclos = closed_count / period
         return perclos

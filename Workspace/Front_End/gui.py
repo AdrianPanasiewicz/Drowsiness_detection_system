@@ -227,8 +227,7 @@ class GUI:
 
     def set_face_plotter(self, face_plotter_inst):
         """
-        Umożliwia wymianę lub ponowne ustawienie instancji FacePlotter (np. w sytuacji
-        ponownej inicjalizacji wizualizacji 3D).
+        Umożliwia wymianę lub ponowne ustawienie instancji FacePlotter.
 
         :param face_plotter_inst: Nowa instancja FacePlotter.
         :type face_plotter_inst: FacePlotter
