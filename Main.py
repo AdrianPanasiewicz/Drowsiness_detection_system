@@ -2,7 +2,7 @@ from Workspace import *
 import time
 if __name__ == "__main__":
 
-    def second_task():
+    def analyze_face_parameters():
         while True:
             fps = Utils.calculate_fps()
 
@@ -16,8 +16,6 @@ if __name__ == "__main__":
 
             # Utils.render_face_coordinates(coordinates_parser, face_plotter, face_mesh_coords)
 
-            cv2.imshow('Drowsiness detection', processed_frame)
-
             packet = {
                 "MAR": perclos,
                 "Yawning": is_jawning,
@@ -27,12 +25,12 @@ if __name__ == "__main__":
                 "PERCLOS": perclos
             }
 
-            gui_display.update_parameters(mar, is_jawning, roll, pitch, ear, perclos, yawn_counter, fps)
+            gui_display.queue_parameters(mar, is_jawning, roll, pitch, ear, perclos, yawn_counter, fps)
+            gui_display.queue_image(processed_frame)
 
             sql_saver.save_to_csv(packet)
 
-            # Nacisnij 'q', aby wyjsc
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if 0xFF == ord('q'):
                 gui.running = False
                 break
 
@@ -40,9 +38,6 @@ if __name__ == "__main__":
 
     # Załadowanie klasy ImageProcessor do przetwarzania obrazu
     image_processor = ImageProcessor()
-    crop_size = (224,224)
-    text_color = [240, 10, 10]
-    text_parameters = (cv2.FONT_HERSHEY_DUPLEX,1,text_color,2)
 
     # model_loader = ModelLoader()
     # models = model_loader.load_models()
@@ -52,7 +47,6 @@ if __name__ == "__main__":
     sql_saver = SqlSaver()
     os.system('cls')
 
-    # Initialise camera for video capture
     try:
         camera = cv2.VideoCapture(0)
         if camera is None or not camera.isOpened():
@@ -68,16 +62,12 @@ if __name__ == "__main__":
     find_yawn = yawn_finder.YawnFinder(yawn_threshold)
     find_face_tilt = face_angle_finder.FaceAngleFinder()
     find_saccade_velocity = saccade_speed_velocity.SaccadeVelocityFinder()
-    # saccs = np.zeros(1)
 
     gui_display = GUI()
-    second_threat = threading.Thread(target=second_task, daemon=True)
+    second_threat = threading.Thread(target=analyze_face_parameters, daemon=True)
     second_threat.start()
 
     gui_display.start()
-
-    # camera.release()
-    # cv2.destroyAllWindows()
 
 
 
