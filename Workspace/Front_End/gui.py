@@ -120,7 +120,7 @@ class GUI:
             canvas=self.canvas,
             root=self.window
         )
-        self.face_plotter_inst.start_animation(interval=33)
+        self.face_plotter_inst.start_animation(interval=70)
 
         # Ramka (frame) do wyświetlania parametrów obliczanych na podstawie obrazu twarzy.
         self.params_frame = customtkinter.CTkFrame(self.window)

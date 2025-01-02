@@ -1,69 +1,148 @@
 from Workspace import *
 import threading
+import os
+import sys
+import pathlib
+import cv2
 
-if __name__ == "__main__":
+def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver_inst, find_perclos,
+                find_yawn, find_face_tilt, gui_display_inst=None):
+    while True:
+        # Calculate Frames Per Second (FPS)
+        fps = Utils.calculate_fps()
 
-    def analyze_face_parameters():
-        while True:
-            # Obliczanie klatek na sekundę (FPS)
-            fps = Utils.calculate_fps()
+        # Capture frame from the camera and process the image
+        ret, frame = camera.read()
+        if not ret:
+            print("Failed to read frame from camera.")
+            break
 
-            # Pobranie klatki z kamery i przetworzenie obrazu (m.in. wykrycie siatki twarzy)
-            ret, frame = camera.read()
-            processed_frame, face_mesh_coords = image_processor.process_face_image(frame)
+        processed_frame, face_mesh_coords = image_processor_inst.process_face_image(frame)
 
-            # Wyznaczenie poszczególnych wskaźników (PERCLOS, EAR, ziewanie, pochylenie głowy)
-            perclos, ear = find_perclos.find_parameter(face_mesh_coords)
-            is_jawning, yawn_counter, mar = find_yawn.find_parameter(face_mesh_coords)
-            roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
+        # Compute drowsiness indicators
+        perclos, ear = find_perclos.find_parameter(face_mesh_coords)
+        is_jawning, yawn_counter, mar = find_yawn.find_parameter(face_mesh_coords)
+        roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
 
-            # Aktualizacja wizualizacji 3D i parametrów w GUI
-            face_plotter_inst = gui_display.get_face_plotter()
-            Utils.render_face_coordinates(coordinates_parser, face_plotter_inst, face_mesh_coords)
-            gui_display.set_face_plotter(face_plotter_inst)
-            gui_display.queue_parameters(mar, is_jawning, roll, pitch, ear, perclos, yawn_counter, fps)
-            gui_display.queue_image(processed_frame)
+        # Update GUI with processed data
+        if gui_display_inst:
+            face_plotter_inst = gui_display_inst.get_face_plotter()
+            Utils.render_face_coordinates(coordinates_parser_inst, face_plotter_inst, face_mesh_coords)
+            gui_display_inst.set_face_plotter(face_plotter_inst)
+            gui_display_inst.queue_parameters(mar, is_jawning, roll, pitch, ear, perclos, yawn_counter, fps)
+            gui_display_inst.queue_image(processed_frame)
 
-            # Zapis wyników do pliku CSV
-            packet = {"MAR": perclos, "Yawning": is_jawning, "Roll": roll, "Pitch": pitch, "EAR": ear, "PERCLOS": perclos}
-            sql_saver.save_to_csv(packet)
+        # Save results to CSV
+        packet = {
+            "MAR": mar,
+            "Yawning": is_jawning,
+            "YawnCounter": yawn_counter,
+            "Roll": roll,
+            "Pitch": pitch,
+            "EAR": ear,
+            "PERCLOS": perclos,
+        }
+        sql_saver_inst.save_to_csv(packet)
 
-            # Wyjście z pętli po wciśnięciu 'q'
-            if 0xFF == ord('q'):
-                gui.running = False
-                break
 
-    # Poprawka typów ścieżek w Windows
+def process_images_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finder_inst,
+                        yawn_finder_inst, face_angle_finder_inst):
+    image_paths = list(
+        pathlib.Path(image_folder).glob('*.*'))  # Adjust the pattern as needed (e.g., '*.jpg', '*.png')
+    for image_path in image_paths:
+        frame = cv2.imread(str(image_path))
+        if frame is None:
+            print(f"Failed to read image: {image_path}")
+            continue
+
+        processed_frame, face_mesh_coords = image_processor_inst.process_face_image(frame)
+
+        # Compute drowsiness indicators
+        perclos, ear = perclos_finder_inst.find_parameter(face_mesh_coords)
+        is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
+        roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
+
+        # Save results to CSV, including the image filename
+        packet = {
+            "Image": str(image_path.name),
+            "MAR": mar,
+            "Yawning": is_jawning,
+            "Roll": roll,
+            "Pitch": pitch,
+            "EAR": ear,
+        }
+        sql_saver_inst.save_to_csv(packet)
+
+    print(f"Processing completed. Results saved to {sql_saver_inst.saving_path}")
+
+def main():
+
+    mode = "camera"
+    image_folder = ""
+
+    # Fix pathlib for Windows if necessary
     pathlib.PosixPath = Utils.fix_pathlib()
 
-    # Inicjalizacja klas związanych z systemem
-    image_processor = ImageProcessor()
-    coordinates_parser = CoordinatesParser()
-    sql_saver = SqlSaver()
-    os.system('cls')
+    # Initialize system-related classes
+    image_processor_inst = ImageProcessor()
+    coordinates_parser_inst = CoordinatesParser()
+    sql_saver_inst = SqlSaver()
+    os.system('cls' if os.name == 'nt' else 'clear')
 
-    # Inicjalizacja kamery
-    try:
-        camera = cv2.VideoCapture(0)
-        if camera is None or not camera.isOpened():
-            raise TypeError
-    except TypeError as e:
-        raise TypeError('Nie udało się uzyskać dostępu do kamery lub kamera nie istnieje') from e
-
-    # Ustawienia progów dla PERCLOS i ziewania
+    # Threshold settings for PERCLOS and yawning
     perclos_threshold = 0.2
     yawn_threshold = 0.55
 
-    # Obiekty do wyliczania PERCLOS, ziewania, pochylenia głowy, itp.
+    # Initialize parameter finders
     find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
     find_yawn = yawn_finder.YawnFinder(yawn_threshold)
     find_face_tilt = face_angle_finder.FaceAngleFinder()
-    find_saccade_velocity = saccade_speed_velocity.SaccadeVelocityFinder()
 
-    # Utworzenie GUI i uruchomienie wątku do analizy
-    gui_display = GUI()
-    second_thread = threading.Thread(target=analyze_face_parameters, daemon=True)
-    second_thread.start()
+    if mode == 'camera':
+        # Initialize camera
+        try:
+            camera = cv2.VideoCapture(0)
+            if not camera.isOpened():
+                raise TypeError('Nie udało się uzyskać dostępu do kamery lub kamera nie istnieje')
+        except TypeError as e:
+            print(e)
+            sys.exit(1)
 
-    # Start głównej pętli zdarzeń w GUI
-    gui_display.start()
+        # Initialize GUI
+        gui_display = GUI()
+
+        # Start analysis in a separate thread
+        analysis_thread = threading.Thread(
+            target=camera_mode,
+            args=(camera, image_processor_inst, coordinates_parser_inst, sql_saver_inst, find_perclos, find_yawn,
+                  find_face_tilt, gui_display),
+            daemon=True
+        )
+        analysis_thread.start()
+
+        # Start the GUI event loop
+        gui_display.start()
+
+        # Release the camera upon exit
+        camera.release()
+
+    elif mode == 'image':
+
+        image_folder = image_folder
+        if not pathlib.Path(image_folder).is_dir():
+            print(f"The provided image folder does not exist or is not a directory: {image_folder}")
+            sys.exit(1)
+
+        # Process images
+        process_images_mode(
+            image_folder,
+            image_processor_inst,
+            sql_saver_inst,
+            find_perclos,
+            find_yawn,
+            find_face_tilt
+        )
+
+if __name__ == "__main__":
+    main()
+

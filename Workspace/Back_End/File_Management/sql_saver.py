@@ -9,16 +9,17 @@ class SqlSaver:
     - change_name_if_exists(): automatyczne zmienianie nazwy pliku, jeśli plik o danej nazwie istnieje.
     """
 
-    default_saving_path = r'Results\results.csv'
+    default_filename = "results.csv"
 
-    def __init__(self):
+    def __init__(self, filename = default_filename):
         """
         Inicjalizuje obiekt SqlSaver, ustalając ścieżkę docelową pliku CSV i
         zapewniając unikalną nazwę pliku (jeżeli istnieje konflikt nazw).
         """
         # Ustalanie ścieżki domyślnej, wychodząc z lokalizacji bieżącego pliku.
         self.working_directory = pathlib.Path(__file__).parent.parent.parent
-        self.saving_path = self.working_directory / self.default_saving_path
+        relative_saving_path = fr'Results\{filename}'
+        self.saving_path = self.working_directory / relative_saving_path
         self.index = 0
         self.change_name_if_exists()
 
