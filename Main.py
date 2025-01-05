@@ -45,11 +45,15 @@ def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver
         sql_saver_inst.save_to_csv(packet)
 
 
-def process_images_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finder_inst,
-                        yawn_finder_inst, face_angle_finder_inst):
+def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finder_inst,
+               yawn_finder_inst, face_angle_finder_inst):
+
     image_paths = list(
         pathlib.Path(image_folder).glob('*.*'))  # Adjust the pattern as needed (e.g., '*.jpg', '*.png')
-    for image_path in image_paths:
+
+    map_drowsiness_label = {"0":"Not_drowsy", "1":"Drowsy", "2":"Drowsy"}
+
+    for index,image_path in enumerate(image_paths,1):
         frame = cv2.imread(str(image_path))
         if frame is None:
             print(f"Failed to read image: {image_path}")
@@ -57,28 +61,48 @@ def process_images_mode(image_folder, image_processor_inst, sql_saver_inst, perc
 
         processed_frame, face_mesh_coords = image_processor_inst.process_face_image(frame)
 
-        # Compute drowsiness indicators
-        perclos, ear = perclos_finder_inst.find_parameter(face_mesh_coords)
-        is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
-        roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
+        if face_mesh_coords:
 
-        # Save results to CSV, including the image filename
-        packet = {
-            "Image": str(image_path.name),
-            "MAR": mar,
-            "Yawning": is_jawning,
-            "Roll": roll,
-            "Pitch": pitch,
-            "EAR": ear,
-        }
-        sql_saver_inst.save_to_csv(packet)
+            # Compute drowsiness indicators
+            perclos, ear = perclos_finder_inst.find_parameter(face_mesh_coords)
+            is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
+            roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
+
+            image_name = image_path.name
+            label_path = image_path.parent.parent / 'labels' / f'{image_name[:-4]}.txt'
+            label_file = open(label_path, 'r')
+            drowsiness_label = map_drowsiness_label[label_file.read(1)]
+            label_file.close()
+
+            # Save results to CSV, including the image filename
+            packet = {
+                "Image": str(image_path.name),
+                "MAR": mar,
+                "Yawning": is_jawning,
+                "Roll": roll,
+                "Pitch": pitch,
+                "EAR": ear,
+                "Drowsy": drowsiness_label
+            }
+            sql_saver_inst.save_to_csv(packet)
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        if index % 100 == 0:
+            print(f"Images processed:{index}/{len(image_paths)}")
 
     print(f"Processing completed. Results saved to {sql_saver_inst.saving_path}")
 
 def main():
 
     mode = "camera"
-    image_folder = ""
+    image_folder = pathlib.Path(r"C:\Users\adria\Documents\drowsiness_dataset")
+    train_folder = image_folder / r"train\images"
+    val_folder = image_folder / r"valid\images"
+    test_folder = image_folder / "test\images"
+    training_name = "training_data.csv"
+    validating_name = "validating_data.csv"
+    testing_name = "testing_data.csv"
+
 
     # Fix pathlib for Windows if necessary
     pathlib.PosixPath = Utils.fix_pathlib()
@@ -86,19 +110,22 @@ def main():
     # Initialize system-related classes
     image_processor_inst = ImageProcessor()
     coordinates_parser_inst = CoordinatesParser()
-    sql_saver_inst = SqlSaver()
+    sql_saver_training_inst = SqlSaver(training_name)
+    sql_saver_validating_inst = SqlSaver(validating_name)
+    sql_saver_testing_inst = SqlSaver(testing_name)
+
     os.system('cls' if os.name == 'nt' else 'clear')
 
     # Threshold settings for PERCLOS and yawning
     perclos_threshold = 0.2
     yawn_threshold = 0.55
 
-    # Initialize parameter finders
-    find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
-    find_yawn = yawn_finder.YawnFinder(yawn_threshold)
-    find_face_tilt = face_angle_finder.FaceAngleFinder()
-
     if mode == 'camera':
+
+        find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
+        find_yawn = yawn_finder.YawnFinder(yawn_threshold)
+        find_face_tilt = face_angle_finder.FaceAngleFinder()
+
         # Initialize camera
         try:
             camera = cv2.VideoCapture(0)
@@ -114,7 +141,7 @@ def main():
         # Start analysis in a separate thread
         analysis_thread = threading.Thread(
             target=camera_mode,
-            args=(camera, image_processor_inst, coordinates_parser_inst, sql_saver_inst, find_perclos, find_yawn,
+            args=(camera, image_processor_inst, coordinates_parser_inst, sql_saver_testing_inst, find_perclos, find_yawn,
                   find_face_tilt, gui_display),
             daemon=True
         )
@@ -128,16 +155,37 @@ def main():
 
     elif mode == 'image':
 
-        image_folder = image_folder
+        find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
+        find_yawn = yawn_finder.YawnFinder(yawn_threshold, is_image_mode = True)
+        find_face_tilt = face_angle_finder.FaceAngleFinder()
+
         if not pathlib.Path(image_folder).is_dir():
             print(f"The provided image folder does not exist or is not a directory: {image_folder}")
             sys.exit(1)
 
         # Process images
-        process_images_mode(
-            image_folder,
+        image_mode(
+            train_folder,
             image_processor_inst,
-            sql_saver_inst,
+            sql_saver_training_inst,
+            find_perclos,
+            find_yawn,
+            find_face_tilt
+        )
+
+        image_mode(
+            val_folder,
+            image_processor_inst,
+            sql_saver_validating_inst,
+            find_perclos,
+            find_yawn,
+            find_face_tilt
+        )
+
+        image_mode(
+            test_folder,
+            image_processor_inst,
+            sql_saver_testing_inst,
             find_perclos,
             find_yawn,
             find_face_tilt

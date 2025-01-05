@@ -8,7 +8,7 @@ class YawnFinder(ParameterFinder):
     proporcji (stosunku pionowej wysokości ust do jej szerokości).
     """
 
-    def __init__(self, yawn_threshold: float):
+    def __init__(self, yawn_threshold: float, is_image_mode = False):
         """
         Inicjalizuje obiekt YawnFinder, ustala indeksy ust i pamięć
         do zliczania ziewnięć, a także ustawia próg (threshold) decydujący
@@ -20,7 +20,10 @@ class YawnFinder(ParameterFinder):
         """
         self.mouth_indices = np.array([[37, 84], [0, 17], [267, 314], [62, 29]])
         self.yawn_counter = 0
-        self.yawn_memory = np.zeros(10, dtype=bool)
+        if is_image_mode:
+            self.yawn_memory = np.zeros(1, dtype=bool)
+        else:
+            self.yawn_memory = np.zeros(10, dtype=bool)
         self.yawn_threshold = yawn_threshold
 
     def find_parameter(self, face_coords) -> tuple:
