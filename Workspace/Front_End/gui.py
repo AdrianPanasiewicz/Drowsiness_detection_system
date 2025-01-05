@@ -136,15 +136,18 @@ class GUI:
 
         # Tekst wyświetlający przykładowe wartości na starcie.
         params_text = (
-            f"MAR:\t\t 0\n"
-            f"Ziewanie:\t\t Brak\n"
-            f"Licznik ziewnięć:\t 0\n"
-            f"Roll:\t\t 0\n"
-            f"Pitch:\t\t 0\n"
-            f"EAR:\t\t 0\n"
-            f"PERCLOS:\t 0%\n"
+            f"MAR:\t\t None\n"
+            f"Ziewanie:\t\t None\n"
+            f"Licznik ziewnięć:\t None\n"
+            f"Roll:\t\t None\n"
+            f"Pitch:\t\t None\n"
+            f"EAR:\t\t None\n"
+            f"PERCLOS:\t None\n"
             f"\n"
-            f"FPS:\t\t 0\n"
+            f"FPS:\t\t None\n"
+            f"\n"
+            f"\n"
+            f"Predykcja:\t None"
         )
 
         # Etykieta prezentująca parametry, używająca monospaced fontu i lewego justowania.
@@ -234,7 +237,7 @@ class GUI:
         """
         self.face_plotter_inst = face_plotter_inst
 
-    def queue_parameters(self, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps):
+    def queue_parameters(self, prediction, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps):
         """
         Dodaje zestaw parametrow (m.in. MAR, EAR, PERCLOS, FPS) do kolejki data_queue,
         skąd będą pobrane i wyświetlane w metodzie update_labels().
@@ -256,7 +259,7 @@ class GUI:
         :param fps: Liczba klatek na sekundę (Frames Per Second).
         :type fps: float lub int
         """
-        self.data_queue.put((mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps))
+        self.data_queue.put((prediction, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps))
 
     def change_appearance(self, new_appearance_mode):
         """
@@ -315,7 +318,7 @@ class GUI:
         """
         try:
             while not self.data_queue.empty():
-                mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps = self.data_queue.get_nowait()
+                prediction, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps = self.data_queue.get_nowait()
                 self.params_label.configure(
                     text=(
                         f"MAR:\t\t {round(mar, 2)}\n"
@@ -327,6 +330,9 @@ class GUI:
                         f"PERCLOS:\t {round(perclos * 100, 2)}%\n"
                         f"\n"
                         f"FPS:\t\t {int(fps)}\n"
+                        f"\n"
+                        f"\n"
+                        f"Predykcja:\t {prediction}"
                     )
                 )
         except queue.Empty:

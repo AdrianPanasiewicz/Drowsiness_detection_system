@@ -1,3 +1,4 @@
+from sklearn.ensemble import RandomForestClassifier
 from Workspace import *
 import threading
 import os
@@ -6,7 +7,7 @@ import pathlib
 import cv2
 
 def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver_inst, find_perclos,
-                find_yawn, find_face_tilt, gui_display_inst=None):
+                find_yawn, find_face_tilt, random_forest_classifier, gui_display_inst=None):
     while True:
         # Calculate Frames Per Second (FPS)
         fps = Utils.calculate_fps()
@@ -24,12 +25,17 @@ def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver
         is_jawning, yawn_counter, mar = find_yawn.find_parameter(face_mesh_coords)
         roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
 
+        if face_mesh_coords.multi_face_landmarks:
+            cols = ["MAR", "EAR", "Roll", "Pitch"]
+            data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
+            prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
+
         # Update GUI with processed data
         if gui_display_inst:
             face_plotter_inst = gui_display_inst.get_face_plotter()
             Utils.render_face_coordinates(coordinates_parser_inst, face_plotter_inst, face_mesh_coords)
             gui_display_inst.set_face_plotter(face_plotter_inst)
-            gui_display_inst.queue_parameters(mar, is_jawning, roll, pitch, ear, perclos, yawn_counter, fps)
+            gui_display_inst.queue_parameters(prediction, mar, is_jawning, roll, pitch, ear, perclos, yawn_counter, fps)
             gui_display_inst.queue_image(processed_frame)
 
         # Save results to CSV
@@ -46,10 +52,10 @@ def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver
 
 
 def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finder_inst,
-               yawn_finder_inst, face_angle_finder_inst):
+               yawn_finder_inst, face_angle_finder_inst, random_forest_classifier):
 
     image_paths = list(
-        pathlib.Path(image_folder).glob('*.*'))  # Adjust the pattern as needed (e.g., '*.jpg', '*.png')
+        pathlib.Path(image_folder).glob('*.*'))
 
     map_drowsiness_label = {"0":"Not_drowsy", "1":"Drowsy", "2":"Drowsy"}
 
@@ -68,6 +74,11 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
             is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
             roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
 
+            cols = ["MAR", "EAR", "Roll", "Pitch"]
+            data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
+            prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
+
+            # Do przetwarzania bazy danych do trenownia modelu
             image_name = image_path.name
             label_path = image_path.parent.parent / 'labels' / f'{image_name[:-4]}.txt'
             label_file = open(label_path, 'r')
@@ -82,7 +93,7 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
                 "Roll": roll,
                 "Pitch": pitch,
                 "EAR": ear,
-                "Drowsy": drowsiness_label
+                "Drowsy": prediction
             }
             sql_saver_inst.save_to_csv(packet)
 
@@ -95,6 +106,8 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
 def main():
 
     mode = "camera"
+    results_name = "results.csv"
+
     image_folder = pathlib.Path(r"C:\Users\adria\Documents\drowsiness_dataset")
     train_folder = image_folder / r"train\images"
     val_folder = image_folder / r"valid\images"
@@ -110,21 +123,20 @@ def main():
     # Initialize system-related classes
     image_processor_inst = ImageProcessor()
     coordinates_parser_inst = CoordinatesParser()
-    sql_saver_training_inst = SqlSaver(training_name)
-    sql_saver_validating_inst = SqlSaver(validating_name)
-    sql_saver_testing_inst = SqlSaver(testing_name)
 
     os.system('cls' if os.name == 'nt' else 'clear')
 
     # Threshold settings for PERCLOS and yawning
     perclos_threshold = 0.2
-    yawn_threshold = 0.55
+    yawn_threshold = 0.36
 
     if mode == 'camera':
+        sql_saver = SqlSaver(results_name)
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
         find_yawn = yawn_finder.YawnFinder(yawn_threshold)
         find_face_tilt = face_angle_finder.FaceAngleFinder()
+        random_forest_classifier = RandomForest(activation_certainty = 0.5, prediction_memory_size = 50)
 
         # Initialize camera
         try:
@@ -141,8 +153,8 @@ def main():
         # Start analysis in a separate thread
         analysis_thread = threading.Thread(
             target=camera_mode,
-            args=(camera, image_processor_inst, coordinates_parser_inst, sql_saver_testing_inst, find_perclos, find_yawn,
-                  find_face_tilt, gui_display),
+            args=(camera, image_processor_inst, coordinates_parser_inst, sql_saver, find_perclos, find_yawn,
+                  find_face_tilt, random_forest_classifier, gui_display),
             daemon=True
         )
         analysis_thread.start()
@@ -154,6 +166,10 @@ def main():
         camera.release()
 
     elif mode == 'image':
+        sql_saver_training_inst = SqlSaver(training_name)
+        sql_saver_validating_inst = SqlSaver(validating_name)
+        sql_saver_testing_inst = SqlSaver(testing_name)
+        random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=50)
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
         find_yawn = yawn_finder.YawnFinder(yawn_threshold, is_image_mode = True)
@@ -170,7 +186,8 @@ def main():
             sql_saver_training_inst,
             find_perclos,
             find_yawn,
-            find_face_tilt
+            find_face_tilt,
+            random_forest_classifier
         )
 
         image_mode(
@@ -179,7 +196,8 @@ def main():
             sql_saver_validating_inst,
             find_perclos,
             find_yawn,
-            find_face_tilt
+            find_face_tilt,
+            random_forest_classifier
         )
 
         image_mode(
@@ -188,7 +206,8 @@ def main():
             sql_saver_testing_inst,
             find_perclos,
             find_yawn,
-            find_face_tilt
+            find_face_tilt,
+            random_forest_classifier
         )
 
 if __name__ == "__main__":

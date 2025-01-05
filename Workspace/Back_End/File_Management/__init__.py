@@ -1,2 +1,2 @@
-from .model_loader import *
+from .random_forest import *
 from .sql_saver import *
