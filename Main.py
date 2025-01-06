@@ -1,11 +1,10 @@
-from sklearn.ensemble import RandomForestClassifier
 from Workspace import *
 import threading
 import os
 import sys
 import pathlib
 import cv2
-import pandas as pd  # Upewnij się, że pandas jest zaimportowany
+import pandas as pd
 
 def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver_inst, find_perclos,
                 find_yawn, find_face_tilt, random_forest_classifier, gui_display_inst=None):
