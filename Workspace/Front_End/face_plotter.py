@@ -63,7 +63,7 @@ class FacePlotter:
         self.y_dict_all.update({name: y_list})
         self.z_dict_all.update({name: z_list})
 
-    def _update_plot(self, interval=33):
+    def _update_plot(self, interval=100):
         """
         Metoda wewnętrzna odpowiedzialna za cykliczną aktualizację wykresu. Czyści istniejący
         rysunek, ustawia parametry osi, a następnie rysuje nowe punkty na bazie danych ze

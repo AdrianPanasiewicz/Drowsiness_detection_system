@@ -120,45 +120,64 @@ class GUI:
             canvas=self.canvas,
             root=self.window
         )
-        self.face_plotter_inst.start_animation(interval=70)
+        self.face_plotter_inst.start_animation(interval=120)
 
         # Ramka (frame) do wyświetlania parametrów obliczanych na podstawie obrazu twarzy.
         self.params_frame = customtkinter.CTkFrame(self.window)
         self.params_frame.pack(pady=20, padx=20, fill="both", expand=True, side="right")
 
+        self.params_info_upper_layer = customtkinter.CTkFrame(self.params_frame)
+        self.params_info_upper_layer.pack(pady=20, padx=20, fill="both", expand=True, side="top")
+
+        self.params_info_mid_layer = customtkinter.CTkFrame(self.params_frame)
+        self.params_info_mid_layer.pack(pady=10, padx=20, fill="both", expand=True)
+
         # Etykieta tytułowa w ramce parametrów.
         self.params_title = customtkinter.CTkLabel(
-            self.params_frame,
+            self.params_info_upper_layer,
             text="Parametry:",
             font=("JetBrains Mono", 40, 'bold')
         )
         self.params_title.pack(pady=20, padx=20)
 
-        # Tekst wyświetlający przykładowe wartości na starcie.
-        params_text = (
-            f"MAR:\t\t None\n"
-            f"Ziewanie:\t\t None\n"
-            f"Licznik ziewnięć:\t None\n"
-            f"Roll:\t\t None\n"
-            f"Pitch:\t\t None\n"
-            f"EAR:\t\t None\n"
-            f"PERCLOS:\t None\n"
-            f"\n"
-            f"FPS:\t\t None\n"
-            f"\n"
-            f"\n"
-            f"Predykcja:\t None"
+        def _create_label_in_params(text, width=150):
+             label = customtkinter.CTkLabel(
+                    self.params_info_mid_layer,
+                    text=text,
+                    width=width,
+                    font=("JetBrains Mono", 20),
+                    anchor="w"
+                )
+             return label
+
+        self.label_list = []
+        self.value_list = []
+        parameters_name = ["MAR:", "Ziewanie:", "Liczba ziewnięć:", "Roll:", "Pitch:", "EAR:", "PERCLOS:"]
+
+        for i in range(len(parameters_name)):
+            self.label_list.append(_create_label_in_params(parameters_name[i]))
+            self.value_list.append(_create_label_in_params("None"))
+            self.label_list[i].grid(row=i, column=0, sticky='W', padx=(25, 0), pady=3)
+            self.value_list[i].grid(row=i, column=1, sticky='W', padx=(25, 10), pady=3)
+
+
+        self.prediction_frame = customtkinter.CTkFrame(self.params_frame)
+        self.prediction_frame.pack(pady=20, padx=20, fill="both", expand=True, side="bottom")
+
+        self.prediction_title = customtkinter.CTkLabel(
+            self.prediction_frame,
+            text = f"Stan operatora:",
+            font=("JetBrains Mono", 30, 'bold'),
+        )
+        self.prediction_title.pack(pady=10, padx=20)
+
+        self.prediction_info = customtkinter.CTkLabel(
+            self.prediction_frame,
+            text = f"None",
+            font=("JetBrains Mono", 30, 'bold'),
         )
 
-        # Etykieta prezentująca parametry, używająca monospaced fontu i lewego justowania.
-        self.params_label = customtkinter.CTkLabel(
-            self.params_frame,
-            text=params_text,
-            font=("JetBrains Mono", 22),
-            justify="left",
-            width=300
-        )
-        self.params_label.pack(pady=20, padx=20)
+        self.prediction_info.pack(pady=10, padx=20)
 
         # Wywołanie metod cyklicznych, aktualizujących dane w GUI.
         self.update_webcam()
@@ -306,7 +325,7 @@ class GUI:
             pass
 
         if self.running:
-            # Zaplanowanie ponownego wywołania po 33 ms (ok. 30 FPS).
+            # Zaplanowanie ponownego wywołania po 10 ms
             self.window.after(33, self.update_webcam)
 
     def update_labels(self):
@@ -319,21 +338,48 @@ class GUI:
         try:
             while not self.data_queue.empty():
                 prediction, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps = self.data_queue.get_nowait()
-                self.params_label.configure(
-                    text=(
-                        f"MAR:\t\t {round(mar, 2)}\n"
-                        f"Ziewanie:\t\t {'Obecne' if is_yawning else 'Brak'}\n"
-                        f"Licznik ziewnięć:\t {round(yawn_counter, 2)}\n"
-                        f"Roll:\t\t {round(roll, 2)}\n"
-                        f"Pitch:\t\t {round(pitch, 2)}\n"
-                        f"EAR:\t\t {round(ear, 2)}\n"
-                        f"PERCLOS:\t {round(perclos * 100, 2)}%\n"
-                        f"\n"
-                        f"FPS:\t\t {int(fps)}\n"
-                        f"\n"
-                        f"\n"
-                        f"Predykcja:\t {prediction}"
-                    )
+
+                self.value_list[0].configure(
+                        text = f"{round(mar,2)}"
+                )
+
+                self.value_list[1].configure(
+                    text=f'{"Obecne" if is_yawning else "Brak"}'
+                )
+
+                self.value_list[2].configure(
+                    text=f'{yawn_counter}'
+                )
+
+                self.value_list[3].configure(
+                    text=f"{round(roll, 2)}"
+                )
+
+                self.value_list[4].configure(
+                    text=f"{round(pitch, 2)}"
+                )
+
+                self.value_list[5].configure(
+                    text=f"{round(ear, 2)}"
+                )
+
+                self.value_list[6].configure(
+                    text=f"{round(100*perclos, 2)}%"
+                )
+
+                if prediction:
+                    pred_text = "Senny"
+                    text_color = 'red'
+                elif prediction is None:
+                    pred_text = f"Brak operatora"
+                    text_color = 'yellow'
+                else:
+                    pred_text = "Czujny"
+                    text_color = '#0ADD08'
+
+                self.prediction_info.configure(
+                    text = pred_text,
+                    text_color = text_color
                 )
         except queue.Empty:
             pass

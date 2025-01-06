@@ -29,6 +29,8 @@ def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver
             cols = ["MAR", "EAR", "Roll", "Pitch"]
             data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
             prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
+        else:
+            prediction = None
 
         # Update GUI with processed data
         if gui_display_inst:
@@ -128,7 +130,7 @@ def main():
 
     # Threshold settings for PERCLOS and yawning
     perclos_threshold = 0.2
-    yawn_threshold = 0.36
+    yawn_threshold = 0.5
 
     if mode == 'camera':
         sql_saver = SqlSaver(results_name)
