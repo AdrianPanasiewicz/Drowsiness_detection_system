@@ -1,5 +1,19 @@
+import tkinter
+from typing import Union
+
+import matplotlib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from mpl_toolkits.mplot3d.axes3d import Axes3D
+
+
 class FacePlotter:
-    def __init__(self, figure, axes3d, canvas, root):
+    def __init__(
+        self,
+        figure: matplotlib.figure.Figure,
+        axes3d: Axes3D,
+        canvas: FigureCanvasTkAgg,
+        root: Union[tkinter.Tk, tkinter.Toplevel]
+    ) -> None:
         """
         Inicjalizacja obiektu FacePlotter, odpowiedzialnego za wyświetlanie i
         aktualizację punktów na twarzy w przestrzeni 3D w interfejsie Tkinter.
@@ -28,7 +42,7 @@ class FacePlotter:
         # Flaga określająca, czy animacja (aktualizacja wykresu) jest uruchomiona
         self._animation_running = False
 
-    def start_animation(self, interval=100):
+    def start_animation(self, interval: int = 100) -> None:
         """
         Rozpoczyna animację wykresu w ustalonym odstępie czasowym (co 'interval' milisekund).
         Wywołuje wewnętrzną metodę _update_plot() przy pomocy metody Tkinter after().
@@ -39,16 +53,23 @@ class FacePlotter:
         self._animation_running = True
         self._update_plot(interval)
 
-    def stop_animation(self):
+    def stop_animation(self) -> None:
         """
         Zatrzymuje animację, uniemożliwiając dalsze aktualizacje wykresu.
         """
         self._animation_running = False
 
-    def update_xyz_coords(self, x_list: list, y_list: list, z_list: list, name: str):
+    def update_xyz_coords(
+        self,
+        x_list: list,
+        y_list: list,
+        z_list: list,
+        name: str
+    ) -> None:
         """
         Aktualizuje lub dodaje nowe współrzędne (X, Y, Z) dla wybranego fragmentu twarzy.
-        Jeżeli wpis pod kluczem 'name' nie istnieje, tworzy nowy; w przeciwnym razie aktualizuje istniejący.
+        Jeżeli wpis pod kluczem 'name' nie istnieje, tworzy nowy; w przeciwnym razie
+        aktualizuje istniejący.
 
         :param x_list: Lista współrzędnych X danego fragmentu twarzy.
         :type x_list: list
@@ -63,7 +84,7 @@ class FacePlotter:
         self.y_dict_all.update({name: y_list})
         self.z_dict_all.update({name: z_list})
 
-    def _update_plot(self, interval=100):
+    def _update_plot(self, interval: int = 100) -> None:
         """
         Metoda wewnętrzna odpowiedzialna za cykliczną aktualizację wykresu. Czyści istniejący
         rysunek, ustawia parametry osi, a następnie rysuje nowe punkty na bazie danych ze
@@ -119,7 +140,6 @@ class FacePlotter:
         :return: Kolor w formacie szesnastkowym np. "#ff0000".
         :rtype: str
         """
-        # Przykładowe mapowanie kolorów w zależności od fragmentu twarzy i indeksu osoby
         if key.upper() == "LEFT_EYE":
             line_color = FacePlotter._format_rgb_string(
                 15 + 50 * person_index,
@@ -174,11 +194,10 @@ class FacePlotter:
         :return: Kolor w formacie szesnastkowym (np. "#0f00a3").
         :rtype: str
         """
-        # Normalizacja wartości składowych (mod 256) i zamiana na zapis szesnastkowy bez prefiksu "0x"
+        # Normalizacja wartości składowych (mod 256) i zamiana na zapis szesnastkowy
         red = f"{rval % 256:02x}"
         green = f"{gval % 256:02x}"
         blue = f"{bval % 256:02x}"
 
         # Złożenie całości w formacie #RRGGBB
-        line_color = f"#{red}{green}{blue}"
-        return line_color
+        return f"#{red}{green}{blue}"

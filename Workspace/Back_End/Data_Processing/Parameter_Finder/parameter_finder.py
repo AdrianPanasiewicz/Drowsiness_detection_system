@@ -1,4 +1,6 @@
 import abc
+from typing import Any
+
 
 class ParameterFinder(metaclass=abc.ABCMeta):
     """
@@ -7,16 +9,22 @@ class ParameterFinder(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Konstruktor klasy abstrakcyjnej ParameterFinder.
         """
         pass
 
     @abc.abstractmethod
-    def find_parameter(self, face_coords):
+    def find_parameter(self, face_coords: Any) -> Any:
         """
         Metoda abstrakcyjna do zwrócenia szukanego parametru
         na podstawie wskaźników (landmarków) na twarzy.
+
+        :param face_coords: Obiekt zawierający współrzędne twarzy
+                            (np. z biblioteki MediaPipe).
+        :type face_coords: Any
+        :return: Wartosc lub obiekt reprezentujący wyliczony parametr.
+        :rtype: Any
         """
         pass

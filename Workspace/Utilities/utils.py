@@ -1,6 +1,7 @@
 import pathlib
 import time
 import numpy as np
+from typing import List, Type, Union
 
 
 class Utils:
@@ -14,11 +15,11 @@ class Utils:
     :type tick_memory: numpy.ndarray
     """
 
-    # Tablica do obliczania średniej ruchomej FPS.
-    tick_memory = np.zeros(15)
+    # Tablica do obliczania średniej ruchomej FPS (15 ostatnich znaczników czasu).
+    tick_memory: np.ndarray = np.zeros(15)
 
     @classmethod
-    def calculate_fps(cls) -> np.floating:
+    def calculate_fps(cls) -> float:
         """
         Oblicza i zwraca liczbę klatek na sekundę (FPS) na podstawie znaczników czasu
         przechowywanych w tablicy cls.tick_memory. Wykorzystuje w tym celu metodę
@@ -26,8 +27,8 @@ class Utils:
         tymczasowa wartość FPS, a następnie wyniki te są uśredniane, by uzyskać
         końcową wartość.
 
-        :rtype: numpy.floating
-        :return: Obliczona liczba klatek na sekundę.
+        :rtype: float
+        :return: Obliczona liczba klatek na sekundę (FPS).
         """
         current_tick = time.time()
 
@@ -40,26 +41,33 @@ class Utils:
         # a następnie tworzymy średnią z otrzymanych wartości.
         for i in range(len(cls.tick_memory) - 1):
             if cls.tick_memory[-1 - i] != cls.tick_memory[-2 - i]:
-                partial_fps[i] = 1.0 / (cls.tick_memory[-1 - i] - cls.tick_memory[-2 - i])
+                diff = cls.tick_memory[-1 - i] - cls.tick_memory[-2 - i]
+                if diff != 0:
+                    partial_fps[i] = 1.0 / diff
 
-        fps = np.mean(partial_fps)
+        fps = float(np.mean(partial_fps))
         return fps
 
     @classmethod
-    def fix_pathlib(cls) -> type(pathlib.WindowsPath):
+    def fix_pathlib(cls) -> Type[pathlib.WindowsPath]:
         """
         Przykładowa metoda zwracająca typ pathlib.WindowsPath. W razie potrzeby
         można tu zawrzeć logikę modyfikującą lub rozszerzającą funkcjonalność
         ścieżek systemu plików w systemie Windows.
 
-        :rtype: type(pathlib.WindowsPath)
+        :rtype: Type[pathlib.WindowsPath]
         :return: Typ pathlib.WindowsPath, który można wykorzystać do dalszej pracy z plikami.
         """
         fixed_path = pathlib.WindowsPath
         return fixed_path
 
     @classmethod
-    def render_face_coordinates(cls, coordinates_parser, face_plt, face_mesh_coords):
+    def render_face_coordinates(
+        cls,
+        coordinates_parser: "CoordinatesParser",
+        face_plt: "FacePlotter",
+        face_mesh_coords: list
+    ) -> None:
         """
         Wyodrębnia konkretne cechy twarzy (oczy, usta, tęczówki) z przekazanej
         listy współrzędnych siatki twarzy, a następnie aktualizuje obiekt
@@ -100,7 +108,7 @@ class Utils:
         face_plt.update_xyz_coords(x_list_5, y_list_5, z_list_5, "RIGHT_IRIS")
 
     @classmethod
-    def frozenset_to_list(cls, frozen_connections: frozenset) -> list:
+    def frozenset_to_list(cls, frozen_connections: frozenset[tuple[int, int]]) -> List[List[int]]:
         """
         Konwertuje zbiór (frozenset) dwuelementowych krotek (reprezentujących
         połączenia między punktami) na listę list, gdzie każda wewnętrzna lista
@@ -109,14 +117,14 @@ class Utils:
 
         :param frozen_connections: Zbiór krotek (np. {(1,2), (2,3), (4,5)...}),
                                    gdzie każda krotka definiuje połączenie między dwoma punktami.
-        :type frozen_connections: frozenset
+        :type frozen_connections: frozenset[tuple[int,int]]
         :return: Lista list punktów, w której każdy element odpowiada ciągłej linii
                  utworzonej przez możliwe do połączenia krotki.
-        :rtype: list
+        :rtype: List[List[int]]
         """
 
         # Lista zawierająca ostateczne linie, gdzie każda linia to lista połączonych ze sobą indeksów punktów.
-        all_face_lines = list()
+        all_face_lines = []
 
         # Dla każdego połączenia sprawdzamy, czy można je dołączyć do już istniejącej linii
         # lub czy musimy utworzyć nową.

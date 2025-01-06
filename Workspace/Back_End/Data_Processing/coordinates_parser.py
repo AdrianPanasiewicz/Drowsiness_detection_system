@@ -7,6 +7,7 @@ from mediapipe.python.solutions.face_mesh_connections import (
     FACEMESH_RIGHT_EYE
 )
 from Workspace.Utilities import Utils
+from typing import List, Tuple, Any
 
 
 class CoordinatesParser:
@@ -16,7 +17,7 @@ class CoordinatesParser:
     MediaPipe (obiekt face_coords_results).
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Inicjalizuje obiekt CoordinatesParser i przygotowuje listy indeksów
         dla poszczególnych obszarów twarzy (lewe/prawe oko, usta, tęczówki).
@@ -27,7 +28,7 @@ class CoordinatesParser:
         self._left_iris_indices = Utils.frozenset_to_list(FACEMESH_LEFT_IRIS)
         self._right_iris_indices = Utils.frozenset_to_list(FACEMESH_RIGHT_IRIS)
 
-    def find_left_eye(self, face_coords_results) -> list:
+    def find_left_eye(self, face_coords_results: Any) -> List:
         """
         Zwraca współrzędne punktów orientacyjnych lewego oka.
 
@@ -49,7 +50,7 @@ class CoordinatesParser:
                 all_left_eye_coords.append(left_eye_coords)
         return all_left_eye_coords
 
-    def find_right_eye(self, face_coords_results) -> list:
+    def find_right_eye(self, face_coords_results: Any) -> List:
         """
         Zwraca współrzędne punktów orientacyjnych prawego oka.
 
@@ -70,7 +71,7 @@ class CoordinatesParser:
                 all_right_eye_coords.append(right_eye_coords)
         return all_right_eye_coords
 
-    def find_mouth(self, face_coords_results) -> list:
+    def find_mouth(self, face_coords_results: Any) -> List:
         """
         Zwraca współrzędne punktów orientacyjnych ust.
 
@@ -92,10 +93,10 @@ class CoordinatesParser:
         return all_mouth_coords
 
     @staticmethod
-    def coords_to_plot_form(face_elem_coords: list) -> tuple:
+    def coords_to_plot_form(face_elem_coords: List) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray]]:
         """
-        Konwertuje współrzędne (landmarki) na trzy tablice NumPy zawierające współrzędne
-        w osiach X, Y i Z, co ułatwia późniejsze rysowanie w 3D.
+        Konwertuje współrzędne (landmarki) na trzy listy tablic NumPy zawierające współrzędne
+        w osiach X, Y i Z (x_list_all, y_list_all, z_list_all).
 
         :param face_elem_coords: Lista współrzędnych punktów dla fragmentu twarzy (np. oka),
                                  zwykle wielopoziomowa (twarze -> linie -> słowniki).
@@ -123,7 +124,7 @@ class CoordinatesParser:
 
         return x_list_all, y_list_all, z_list_all
 
-    def find_left_iris(self, face_coords_results) -> list:
+    def find_left_iris(self, face_coords_results: Any) -> List:
         """
         Zwraca współrzędne punktów orientacyjnych lewej tęczówki.
 
@@ -144,7 +145,7 @@ class CoordinatesParser:
                 all_left_iris_coords.append(left_iris_coords)
         return all_left_iris_coords
 
-    def find_right_iris(self, face_coords_results) -> list:
+    def find_right_iris(self, face_coords_results: Any) -> List:
         """
         Zwraca współrzędne punktów orientacyjnych prawej tęczówki.
 

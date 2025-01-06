@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 from mediapipe import solutions
+from typing import Tuple, Any
+
 
 class ImageProcessor:
     """
@@ -8,7 +10,7 @@ class ImageProcessor:
     wycinanie (crop), konwersję do skali szarości oraz wykrywanie siatki twarzy (face mesh).
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Inicjalizuje obiekt ImageProcessor, definiując narzędzia z biblioteki
         MediaPipe (drawing_utils, face_mesh) oraz parametry rysowania landmarków.
@@ -19,7 +21,7 @@ class ImageProcessor:
         self._draw_spec = self._mp_draw.DrawingSpec(thickness=1, circle_radius=1, color=(0, 255, 0))
 
     @staticmethod
-    def _crop_image(image, crop_width: int, crop_height: int) -> np.ndarray:
+    def _crop_image(image: np.ndarray, crop_width: int, crop_height: int) -> np.ndarray:
         """
         Przycina obraz do zadanej szerokości i wysokości, wycinając środek kadru.
 
@@ -44,7 +46,7 @@ class ImageProcessor:
         return cropped_image
 
     @staticmethod
-    def _set_grayscale(image) -> np.ndarray:
+    def _set_grayscale(image: np.ndarray) -> np.ndarray:
         """
         Konwertuje obraz z przestrzeni barw BGR do skali szarości (grayscale).
 
@@ -55,7 +57,7 @@ class ImageProcessor:
         """
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    def _find_face_mesh(self, image):
+    def _find_face_mesh(self, image: np.ndarray) -> Tuple[np.ndarray, Any]:
         """
         Wykrywa siatkę twarzy (face mesh) na obrazie i nanosi wykryte landmarki.
         Do przetwarzania obrazu używany jest tryb RGB (konwersja z BGR).
@@ -82,7 +84,12 @@ class ImageProcessor:
 
         return image, results
 
-    def crop_and_convert_to_gray(self, image, crop_width: int, crop_height: int) -> np.ndarray:
+    def crop_and_convert_to_gray(
+        self,
+        image: np.ndarray,
+        crop_width: int,
+        crop_height: int
+    ) -> np.ndarray:
         """
         Wykonuje wycięcie (crop) środka obrazu do zadanych wymiarów
         oraz konwersję wynikowego obrazu do skali szarości.
@@ -100,7 +107,7 @@ class ImageProcessor:
         gray_image = self._set_grayscale(cropped_image)
         return gray_image
 
-    def process_face_image(self, image):
+    def process_face_image(self, image: np.ndarray) -> Tuple[np.ndarray, Any]:
         """
         Wykrywa siatkę twarzy (face mesh) na przekazanym obrazie i rysuje landmarki.
         Zwraca również wyniki obliczeń MediaPipe w postaci obiektu zawierającego

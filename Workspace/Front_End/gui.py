@@ -3,9 +3,11 @@ import queue
 from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 import cv2
 from Workspace.Front_End.face_plotter import FacePlotter
+from typing import Optional, Union
 
 
 class GUI:
@@ -16,7 +18,7 @@ class GUI:
     zmiany stylu interfejsu i wyświetlanie informacji o programie.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Inicjalizuje główne okno aplikacji i wszystkie jego komponenty,
         w tym ramki (frames), etykiety (labels) i płótna (canvas).
@@ -37,7 +39,7 @@ class GUI:
         self.width = 1450
         self.height = 650
 
-        # Konfiguracja wyglądu interfejsu.
+        # Konfiguracja wyglądu interfejsu (ciemny/jasny/systemowy).
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("blue")
 
@@ -47,12 +49,12 @@ class GUI:
         self.window.title("System wykrywania senności")
         self.window.resizable(False, False)
 
-        # Ścieżka bieżącego pliku – przydatna np. do ładowania zasobów (obrazów tła itp.).
+        # Ścieżka do bieżącego pliku – używana np. do ładowania zasobów (obrazów tła).
         self.current_path = os.path.dirname(os.path.realpath(__file__))
 
-        # Ładowanie i ustawianie obrazu tła w głównym oknie (użycie .place).
+        # Ładowanie i ustawianie obrazu tła w głównym oknie (użycie metody place).
         self.bg_image = customtkinter.CTkImage(
-            Image.open(self.current_path + "/gray_bg_img.jpeg"),
+            Image.open(self.current_path + "/Background_Images/gray_bg_img.jpeg"),
             size=(self.width, self.height)
         )
         self.bg_image_label = customtkinter.CTkLabel(self.window, text="", image=self.bg_image)
@@ -76,7 +78,7 @@ class GUI:
         )
         self.info_button.pack(side="right", padx=20, pady=10)
 
-        # Ramka (frame) z lewej, przeznaczona na wyświetlanie obrazu z kamery.
+        # Ramka (frame) z lewej strony do wyświetlania obrazu z kamery.
         self.webcam_frame = customtkinter.CTkFrame(self.window)
         self.webcam_frame.pack(pady=20, padx=20, fill="both", expand=True, side="left")
 
@@ -92,7 +94,7 @@ class GUI:
         self.webcam_canvas = customtkinter.CTkCanvas(self.webcam_frame, width=640, height=480)
         self.webcam_canvas.pack(pady=25, padx=5, anchor="center")
 
-        # Ramka (frame) po prawej stronie do osadzenia wizualizacji 3D.
+        # Ramka (frame) po prawej stronie do osadzenia wizualizacji 3D twarzy.
         self.plot_frame = customtkinter.CTkFrame(self.window)
         self.plot_frame.pack(pady=20, padx=20, fill="both", expand=True, side="right")
 
@@ -108,7 +110,7 @@ class GUI:
         self.fig = plt.Figure(figsize=(5, 4), dpi=100)
         self.ax = self.fig.add_subplot(111, projection='3d')
 
-        # Osadzenie wykresu Matplotlib w interfejsie TKinter przez FigureCanvasTkAgg.
+        # Umieszczenie wykresu Matplotlib w interfejsie TKinter przy użyciu FigureCanvasTkAgg.
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side="top", fill="both", expand=True)
@@ -126,9 +128,11 @@ class GUI:
         self.params_frame = customtkinter.CTkFrame(self.window)
         self.params_frame.pack(pady=20, padx=20, fill="both", expand=True, side="right")
 
+        # Górna część ramki parametrów.
         self.params_info_upper_layer = customtkinter.CTkFrame(self.params_frame)
         self.params_info_upper_layer.pack(pady=20, padx=20, fill="both", expand=True, side="top")
 
+        # Środkowa część ramki parametrów, w której umieszczane są etykiety i wartości.
         self.params_info_mid_layer = customtkinter.CTkFrame(self.params_frame)
         self.params_info_mid_layer.pack(pady=10, padx=20, fill="both", expand=True)
 
@@ -140,50 +144,54 @@ class GUI:
         )
         self.params_title.pack(pady=20, padx=20)
 
-        def _create_label_in_params(text, width=150):
-             label = customtkinter.CTkLabel(
-                    self.params_info_mid_layer,
-                    text=text,
-                    width=width,
-                    font=("JetBrains Mono", 20),
-                    anchor="w"
-                )
-             return label
+        # Funkcja pomocnicza do tworzenia etykiet w panelu parametrów.
+        def _create_label_in_params(text: str, width: int = 150) -> customtkinter.CTkLabel:
+            label = customtkinter.CTkLabel(
+                self.params_info_mid_layer,
+                text=text,
+                width=width,
+                font=("JetBrains Mono", 20),
+                anchor="w"
+            )
+            return label
 
+        # Listy przechowujące etykiety (nazwa parametru) i ich wartości.
         self.label_list = []
         self.value_list = []
         parameters_name = ["MAR:", "Ziewanie:", "Liczba ziewnięć:", "Roll:", "Pitch:", "EAR:", "PERCLOS:"]
 
+        # Tworzenie etykiet i przypisywanie ich do gridu.
         for i in range(len(parameters_name)):
             self.label_list.append(_create_label_in_params(parameters_name[i]))
             self.value_list.append(_create_label_in_params("None"))
             self.label_list[i].grid(row=i, column=0, sticky='W', padx=(25, 0), pady=3)
             self.value_list[i].grid(row=i, column=1, sticky='W', padx=(25, 10), pady=3)
 
-
+        # Ramka (frame) do prezentowania stanu operatora.
         self.prediction_frame = customtkinter.CTkFrame(self.params_frame)
         self.prediction_frame.pack(pady=20, padx=20, fill="both", expand=True, side="bottom")
 
+        # Etykieta tytułowa dotycząca stanu operatora.
         self.prediction_title = customtkinter.CTkLabel(
             self.prediction_frame,
-            text = f"Stan operatora:",
+            text=f"Stan operatora:",
             font=("JetBrains Mono", 30, 'bold'),
         )
         self.prediction_title.pack(pady=10, padx=20)
 
+        # Etykieta wyświetlająca aktualny stan (np. "Senny", "Czujny", "Brak operatora").
         self.prediction_info = customtkinter.CTkLabel(
             self.prediction_frame,
-            text = f"None",
+            text=f"None",
             font=("JetBrains Mono", 30, 'bold'),
         )
-
         self.prediction_info.pack(pady=10, padx=20)
 
-        # Wywołanie metod cyklicznych, aktualizujących dane w GUI.
+        # Wywołanie metod cyklicznych, odpowiedzialnych za aktualizację obrazu oraz etykiet.
         self.update_webcam()
         self.update_labels()
 
-    def show_info_window(self):
+    def show_info_window(self) -> None:
         """
         Wyświetla okno informacyjne „O programie”, zawierające dane na temat autora,
         celu aplikacji i sposobu jej obsługi.
@@ -228,7 +236,7 @@ class GUI:
         )
         info_label.pack(pady=20, padx=20)
 
-    def queue_image(self, image):
+    def queue_image(self, image: 'np.ndarray') -> None:
         """
         Dodaje nowy obraz (np. z kamery) do kolejki image_queue, skąd
         będzie pobierany i wyświetlany w metodzie update_webcam().
@@ -238,7 +246,7 @@ class GUI:
         """
         self.image_queue.put(image)
 
-    def get_face_plotter(self):
+    def get_face_plotter(self) -> FacePlotter:
         """
         Zwraca instancję klasy FacePlotter wykorzystywaną do wizualizacji 3D twarzy.
 
@@ -247,7 +255,7 @@ class GUI:
         """
         return self.face_plotter_inst
 
-    def set_face_plotter(self, face_plotter_inst):
+    def set_face_plotter(self, face_plotter_inst: FacePlotter) -> None:
         """
         Umożliwia wymianę lub ponowne ustawienie instancji FacePlotter.
 
@@ -256,11 +264,24 @@ class GUI:
         """
         self.face_plotter_inst = face_plotter_inst
 
-    def queue_parameters(self, prediction, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps):
+    def queue_parameters(
+        self,
+        prediction: Optional[bool],
+        mar: float,
+        is_yawning: bool,
+        roll: float,
+        pitch: float,
+        ear: float,
+        perclos: float,
+        yawn_counter: Union[int, float],
+        fps: Union[int, float]
+    ) -> None:
         """
-        Dodaje zestaw parametrow (m.in. MAR, EAR, PERCLOS, FPS) do kolejki data_queue,
+        Dodaje zestaw parametrów (m.in. MAR, EAR, PERCLOS, FPS) do kolejki data_queue,
         skąd będą pobrane i wyświetlane w metodzie update_labels().
 
+        :param prediction: Informacja, czy operator jest senny (True), brak operatora (None) lub czujny (False).
+        :type prediction: bool lub None
         :param mar: Mouth Aspect Ratio (MAR).
         :type mar: float
         :param is_yawning: Informacja, czy aktualnie wykryto ziewanie.
@@ -278,12 +299,14 @@ class GUI:
         :param fps: Liczba klatek na sekundę (Frames Per Second).
         :type fps: float lub int
         """
-        self.data_queue.put((prediction, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps))
+        self.data_queue.put(
+            (prediction, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps)
+        )
 
-    def change_appearance(self, new_appearance_mode):
+    def change_appearance(self, new_appearance_mode: str) -> None:
         """
         Zmienia styl (jasny/ciemny/systemowy) interfejsu za pomocą funkcji
-        biblioteki customtkinter. Jednocześnie aktualizuje obraz tła w zależności
+        z biblioteki customtkinter. Jednocześnie aktualizuje obraz tła w zależności
         od wybranego stylu.
 
         :param new_appearance_mode: Wybrany styl: "Jasny", "Ciemny" lub "Systemowy".
@@ -293,20 +316,20 @@ class GUI:
         customtkinter.set_appearance_mode(mode_dict[new_appearance_mode])
 
         if mode_dict[new_appearance_mode] == "Light":
-            bg_image_path = self.current_path + "/white_bg_img.png"
+            bg_image_path = self.current_path + "/Background_Images/white_bg_img.png"
         elif mode_dict[new_appearance_mode] == "Dark":
-            bg_image_path = self.current_path + "/gray_bg_img.jpeg"
+            bg_image_path = self.current_path + "/Background_Images/gray_bg_img.jpeg"
         else:
-            bg_image_path = self.current_path + "/gray_bg_img.jpeg"
+            bg_image_path = self.current_path + "/Background_Images/gray_bg_img.jpeg"
 
-        # Aktualizacja obrazka tła.
+        # Aktualizacja obrazka tła (ponowne jego wczytanie i przypisanie do etykiety).
         self.bg_image = customtkinter.CTkImage(
             Image.open(bg_image_path),
             size=(self.width, self.height)
         )
         self.bg_image_label.configure(image=self.bg_image)
 
-    def update_webcam(self):
+    def update_webcam(self) -> None:
         """
         Cykl aktualizacji obrazu w oknie 'Kamera'. Metoda co około 33 ms (30 FPS)
         pobiera z kolejki najnowszy obraz, konwertuje go do formatu RGB i wyświetla
@@ -316,7 +339,7 @@ class GUI:
         try:
             while not self.image_queue.empty():
                 image = self.image_queue.get_nowait()
-                # Konwersja z BGR do RGB (OpenCV -> PIL).
+                # Konwersja obrazu z BGR (OpenCV) do RGB, a następnie do formatu PIL.
                 image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
                 self.current_image = ImageTk.PhotoImage(image)
                 self.webcam_canvas.create_image(0, 0, image=self.current_image, anchor="nw")
@@ -325,72 +348,90 @@ class GUI:
             pass
 
         if self.running:
-            # Zaplanowanie ponownego wywołania po 10 ms
+            # Zaplanowanie ponownego wywołania metody po 33 ms (≈30 FPS).
             self.window.after(33, self.update_webcam)
 
-    def update_labels(self):
+    def update_labels(self) -> None:
         """
-        Cykl aktualizacji etykiety z parametrami w panelu 'Parametry'.
+        Cykl aktualizacji etykiet z parametrami w panelu 'Parametry'.
         Metoda pobiera z kolejki data_queue najnowszy zestaw obliczonych
-        parametrów i wyświetla je w etykiecie params_label. Następnie
+        parametrów i wyświetla je w odpowiednich etykietach. Następnie
         ponownie planuje wywołanie samej siebie (window.after()).
         """
         try:
             while not self.data_queue.empty():
-                prediction, mar, is_yawning, roll, pitch, ear, perclos, yawn_counter, fps = self.data_queue.get_nowait()
+                (
+                    prediction,
+                    mar,
+                    is_yawning,
+                    roll,
+                    pitch,
+                    ear,
+                    perclos,
+                    yawn_counter,
+                    fps
+                ) = self.data_queue.get_nowait()
 
+                # Uaktualnienie wartości MAR (Mouth Aspect Ratio).
                 self.value_list[0].configure(
-                        text = f"{round(mar,2)}"
+                    text=f"{round(mar, 2)}"
                 )
 
+                # Informacja o ziewaniu (Obecne/Brak).
                 self.value_list[1].configure(
                     text=f'{"Obecne" if is_yawning else "Brak"}'
                 )
 
+                # Liczba ziewnięć zarejestrowanych podczas sesji.
                 self.value_list[2].configure(
                     text=f'{yawn_counter}'
                 )
 
+                # Kąt przechyłu głowy (roll).
                 self.value_list[3].configure(
                     text=f"{round(roll, 2)}"
                 )
 
+                # Kąt pochylenia głowy (pitch).
                 self.value_list[4].configure(
                     text=f"{round(pitch, 2)}"
                 )
 
+                # Wskaźnik EAR (Eye Aspect Ratio).
                 self.value_list[5].configure(
                     text=f"{round(ear, 2)}"
                 )
 
+                # Wskaźnik PERCLOS wyrażony w procentach.
                 self.value_list[6].configure(
-                    text=f"{round(100*perclos, 2)}%"
+                    text=f"{round(100 * perclos, 2)}%"
                 )
 
+                # Interpretacja stanu operatora (Senny/Czujny/Brak operatora).
                 if prediction:
                     pred_text = "Senny"
                     text_color = 'red'
                 elif prediction is None:
-                    pred_text = f"Brak operatora"
+                    pred_text = "Brak operatora"
                     text_color = 'yellow'
                 else:
                     pred_text = "Czujny"
                     text_color = '#0ADD08'
 
                 self.prediction_info.configure(
-                    text = pred_text,
-                    text_color = text_color
+                    text=pred_text,
+                    text_color=text_color
                 )
         except queue.Empty:
             pass
 
         if self.running:
-            # Zaplanowanie ponownego wywołania po 100 ms.
+            # Zaplanowanie ponownego wywołania metody po 100 ms.
             self.window.after(100, self.update_labels)
 
-    def start(self):
+    def start(self) -> None:
         """
         Rozpoczyna główną pętlę zdarzeń Tkinter, dzięki czemu interfejs użytkownika
-        pozostaje aktywny i reaguje na działania (np. odświeżanie obrazu, klikanie przycisków).
+        pozostaje aktywny i reaguje na działania (np. odświeżanie obrazu czy klikanie przycisków).
         """
         self.window.mainloop()

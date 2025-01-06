@@ -1,5 +1,6 @@
 import pathlib
 import pandas as pd
+from typing import Dict, Any
 
 class SqlSaver:
     """
@@ -11,7 +12,7 @@ class SqlSaver:
 
     default_filename = "results.csv"
 
-    def __init__(self, filename = default_filename):
+    def __init__(self, filename: str = default_filename) -> None:
         """
         Inicjalizuje obiekt SqlSaver, ustalając ścieżkę docelową pliku CSV i
         zapewniając unikalną nazwę pliku (jeżeli istnieje konflikt nazw).
@@ -19,11 +20,11 @@ class SqlSaver:
         # Ustalanie ścieżki domyślnej, wychodząc z lokalizacji bieżącego pliku.
         self.working_directory = pathlib.Path(__file__).parent.parent.parent
         relative_saving_path = fr'Results\{filename}'
-        self.saving_path = self.working_directory / relative_saving_path
+        self.saving_path= self.working_directory / relative_saving_path
         self.index = 0
         self.change_name_if_exists()
 
-    def save_to_csv(self, data: dict) -> None:
+    def save_to_csv(self, data: Dict[str, Any]) -> None:
         """
         Zapisuje słownik 'data' do pliku CSV. Jeśli plik już istnieje, dane są dopisywane;
         w przeciwnym razie tworzony jest nowy plik.

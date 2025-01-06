@@ -5,22 +5,23 @@ import os
 import sys
 import pathlib
 import cv2
+import pandas as pd  # Upewnij się, że pandas jest zaimportowany
 
 def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver_inst, find_perclos,
                 find_yawn, find_face_tilt, random_forest_classifier, gui_display_inst=None):
     while True:
-        # Calculate Frames Per Second (FPS)
+        # Oblicza liczbę klatek na sekundę (FPS)
         fps = Utils.calculate_fps()
 
-        # Capture frame from the camera and process the image
+        # Przechwytuje klatkę z kamery i przetwarza obraz
         ret, frame = camera.read()
         if not ret:
-            print("Failed to read frame from camera.")
+            print("Nie udało się odczytać klatki z kamery.")
             break
 
         processed_frame, face_mesh_coords = image_processor_inst.process_face_image(frame)
 
-        # Compute drowsiness indicators
+        # Oblicza wskaźniki senności
         perclos, ear = find_perclos.find_parameter(face_mesh_coords)
         is_jawning, yawn_counter, mar = find_yawn.find_parameter(face_mesh_coords)
         roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
@@ -32,7 +33,7 @@ def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver
         else:
             prediction = None
 
-        # Update GUI with processed data
+        # Aktualizuje GUI za pomocą przetworzonych danych
         if gui_display_inst:
             face_plotter_inst = gui_display_inst.get_face_plotter()
             Utils.render_face_coordinates(coordinates_parser_inst, face_plotter_inst, face_mesh_coords)
@@ -40,7 +41,7 @@ def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver
             gui_display_inst.queue_parameters(prediction, mar, is_jawning, roll, pitch, ear, perclos, yawn_counter, fps)
             gui_display_inst.queue_image(processed_frame)
 
-        # Save results to CSV
+        # Zapisuje wyniki do pliku CSV
         packet = {
             "MAR": mar,
             "Yawning": is_jawning,
@@ -61,17 +62,17 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
 
     map_drowsiness_label = {"0":"Not_drowsy", "1":"Drowsy", "2":"Drowsy"}
 
-    for index,image_path in enumerate(image_paths,1):
+    for index, image_path in enumerate(image_paths, 1):
         frame = cv2.imread(str(image_path))
         if frame is None:
-            print(f"Failed to read image: {image_path}")
+            print(f"Nie udało się odczytać obrazu: {image_path}")
             continue
 
         processed_frame, face_mesh_coords = image_processor_inst.process_face_image(frame)
 
         if face_mesh_coords:
 
-            # Compute drowsiness indicators
+            # Oblicza wskaźniki senności
             perclos, ear = perclos_finder_inst.find_parameter(face_mesh_coords)
             is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
             roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
@@ -80,14 +81,13 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
             data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
             prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
 
-            # Do przetwarzania bazy danych do trenownia modelu
+            # Do przetwarzania bazy danych do trenowania modelu
             image_name = image_path.name
             label_path = image_path.parent.parent / 'labels' / f'{image_name[:-4]}.txt'
-            label_file = open(label_path, 'r')
-            drowsiness_label = map_drowsiness_label[label_file.read(1)]
-            label_file.close()
+            with open(label_path, 'r') as label_file:
+                drowsiness_label = map_drowsiness_label[label_file.read(1)]
 
-            # Save results to CSV, including the image filename
+            # Zapisuje wyniki do pliku CSV, w tym nazwę pliku obrazu
             packet = {
                 "Image": str(image_path.name),
                 "MAR": mar,
@@ -101,9 +101,10 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
 
         os.system('cls' if os.name == 'nt' else 'clear')
         if index % 100 == 0:
-            print(f"Images processed:{index}/{len(image_paths)}")
+            print(f"Przetworzono obrazów: {index}/{len(image_paths)}")
 
-    print(f"Processing completed. Results saved to {sql_saver_inst.saving_path}")
+    print(f"Przetwarzanie zakończone. Wyniki zapisane w {sql_saver_inst.saving_path}")
+
 
 def main():
 
@@ -119,16 +120,16 @@ def main():
     testing_name = "testing_data.csv"
 
 
-    # Fix pathlib for Windows if necessary
+    # Naprawia pathlib dla systemu Windows, jeśli to konieczne
     pathlib.PosixPath = Utils.fix_pathlib()
 
-    # Initialize system-related classes
+    # Inicjalizuje klasy związane z systemem
     image_processor_inst = ImageProcessor()
     coordinates_parser_inst = CoordinatesParser()
 
     os.system('cls' if os.name == 'nt' else 'clear')
 
-    # Threshold settings for PERCLOS and yawning
+    # Ustawia progi dla PERCLOS i ziewania
     perclos_threshold = 0.2
     yawn_threshold = 0.5
 
@@ -138,9 +139,9 @@ def main():
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
         find_yawn = yawn_finder.YawnFinder(yawn_threshold)
         find_face_tilt = face_angle_finder.FaceAngleFinder()
-        random_forest_classifier = RandomForest(activation_certainty = 0.5, prediction_memory_size = 50)
+        random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=50)
 
-        # Initialize camera
+        # Inicjalizuje kamerę
         try:
             camera = cv2.VideoCapture(0)
             if not camera.isOpened():
@@ -149,10 +150,10 @@ def main():
             print(e)
             sys.exit(1)
 
-        # Initialize GUI
+        # Inicjalizuje GUI
         gui_display = GUI()
 
-        # Start analysis in a separate thread
+        # Rozpoczyna analizę w osobnym wątku
         analysis_thread = threading.Thread(
             target=camera_mode,
             args=(camera, image_processor_inst, coordinates_parser_inst, sql_saver, find_perclos, find_yawn,
@@ -161,10 +162,10 @@ def main():
         )
         analysis_thread.start()
 
-        # Start the GUI event loop
+        # Rozpoczyna pętlę zdarzeń GUI
         gui_display.start()
 
-        # Release the camera upon exit
+        # Zwolnienie kamery po zakończeniu
         camera.release()
 
     elif mode == 'image':
@@ -174,14 +175,14 @@ def main():
         random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=50)
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
-        find_yawn = yawn_finder.YawnFinder(yawn_threshold, is_image_mode = True)
+        find_yawn = yawn_finder.YawnFinder(yawn_threshold, is_image_mode=True)
         find_face_tilt = face_angle_finder.FaceAngleFinder()
 
         if not pathlib.Path(image_folder).is_dir():
-            print(f"The provided image folder does not exist or is not a directory: {image_folder}")
+            print(f"Podany folder z obrazami nie istnieje lub nie jest katalogiem: {image_folder}")
             sys.exit(1)
 
-        # Process images
+        # Przetwarza obrazy
         image_mode(
             train_folder,
             image_processor_inst,
@@ -214,4 +215,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
