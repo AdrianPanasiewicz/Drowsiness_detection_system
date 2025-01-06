@@ -213,7 +213,7 @@ class GUI:
         operatorów dronów w czasie rzeczywistym. Analizuje obraz z kamery 
         i wyświetla parametry takie jak PERCLOS, ziewanie, czy pochylenie 
         głowy. W przypadku wykrycia krytycznych wartości system generuje 
-        alerty dźwiękowe i wizualne.
+        alerty wizualne.
 
         Jak obsługiwać aplikację:
         1. Uruchom plik wykonywalny aplikacji na systemie Windows 10/11.
