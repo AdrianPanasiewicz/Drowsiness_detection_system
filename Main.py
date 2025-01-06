@@ -26,9 +26,14 @@ def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver
         roll, pitch = find_face_tilt.find_parameter(face_mesh_coords)
 
         if face_mesh_coords.multi_face_landmarks:
-            cols = ["MAR", "EAR", "Roll", "Pitch"]
-            data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
-            prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
+            if 0.1 <= perclos < 0.2:
+                cols = ["MAR", "EAR", "Roll", "Pitch"]
+                data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
+                prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
+            elif perclos >= 0.2:
+                prediction = True
+            else:
+                prediction = False
         else:
             prediction = None
 
@@ -76,11 +81,11 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
             is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
             roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
 
-            if 0.1 <= ear < 0.2:
+            if 0.1 <= perclos < 0.2:
                 cols = ["MAR", "EAR", "Roll", "Pitch"]
                 data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
                 prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
-            elif ear >= 0.2:
+            elif perclos >= 0.2:
                 prediction = True
             else:
                 prediction = False

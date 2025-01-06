@@ -416,7 +416,7 @@ class GUI:
                     text_color = 'yellow'
                 else:
                     pred_text = "Czujny"
-                    text_color = '#0ADD08'
+                    text_color = '#0AAA08'
 
                 self.prediction_info.configure(
                     text=pred_text,
