@@ -426,8 +426,8 @@ class GUI:
             pass
 
         if self.running:
-            # Zaplanowanie ponownego wywołania metody po 100 ms.
-            self.window.after(100, self.update_labels)
+            # Zaplanowanie ponownego wywołania metody po 200 ms.
+            self.window.after(200, self.update_labels)
 
     def start(self) -> None:
         """

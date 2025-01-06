@@ -10,12 +10,14 @@ class FaceAngleFinder(ParameterFinder):
     na podstawie wybranych wskaźników (landmarków) twarzy pochodzących z MediaPipe.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, roll_memory_size = 15, pitch_memory_size = 15) -> None:
         """
         Inicjalizuje obiekt FaceAngleFinder poprzez zdefiniowanie zbioru par indeksów,
         na których będzie przeprowadzana analiza kąta pochylenia twarzy.
         """
         self.face_oval_indices: np.ndarray = np.array([[109, 148], [10, 152], [338, 377]])
+        self.roll_memory = np.array(np.zeros(roll_memory_size))
+        self.pitch_memory = np.array(np.zeros(pitch_memory_size))
 
     def find_parameter(self, face_coords: Any) -> Tuple[float, float]:
         """
@@ -53,9 +55,17 @@ class FaceAngleFinder(ParameterFinder):
                     roll_estimates.append(roll_val)
                     pitch_estimates.append(pitch_val)
 
-            roll_mean = float(np.mean(roll_estimates))
-            pitch_mean = float(np.mean(pitch_estimates))
-            return roll_mean, pitch_mean
+            roll = float(np.mean(roll_estimates))
+            pitch = float(np.mean(pitch_estimates))
+            self.roll_memory = np.roll(self.roll_memory, -1)
+            self.pitch_memory = np.roll(self.pitch_memory, -1)
+            self.roll_memory[-1] = roll
+            self.pitch_memory[-1] = pitch
+
+            mean_roll = float(np.mean(self.roll_memory))
+            mean_pitch = float(np.mean(self.pitch_memory))
+
+            return mean_roll, mean_pitch
         else:
             return 0.0, 0.0
 
