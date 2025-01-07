@@ -45,7 +45,7 @@ class PerclosFinder(ParameterFinder):
             self.previous_perclos = perclos
             mean_ear = (left_ear[0] + right_ear[0]) / 2
         else:
-            perclos = self.previous_perclos
+            perclos = 0.0
             mean_ear = 0.0
 
         return perclos, mean_ear

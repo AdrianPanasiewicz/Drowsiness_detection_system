@@ -48,12 +48,13 @@ def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver
         # Zapisuje wyniki do pliku CSV
         packet = {
             "MAR": mar,
-            "Yawning": is_jawning,
-            "YawnCounter": yawn_counter,
+            "Obecne ziewniecie": is_jawning,
+            "Licznik ziewniec": yawn_counter,
             "Roll": roll,
             "Pitch": pitch,
             "EAR": ear,
             "PERCLOS": perclos,
+            "Obecna sennosc": prediction
         }
         sql_saver_inst.save_to_csv(packet)
 
@@ -98,13 +99,13 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
 
             # Zapisuje wyniki do pliku CSV, w tym nazwę pliku obrazu
             packet = {
-                "Image": str(image_path.name),
+                "Obraz": str(image_path.name),
                 "MAR": mar,
-                "Yawning": is_jawning,
+                "Obecne ziewniecie": is_jawning,
                 "Roll": roll,
                 "Pitch": pitch,
                 "EAR": ear,
-                "Drowsy": prediction
+                "Obecna sennosc": prediction
             }
             sql_saver_inst.save_to_csv(packet)
 
@@ -222,5 +223,5 @@ def main():
             random_forest_classifier
         )
 
-if __name__ == "__main__":
-    main()
+
+main()
