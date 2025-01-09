@@ -7,8 +7,8 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   Workspace.Back_End
-   Workspace.Front_End
+   Workspace.BackEnd
+   Workspace.FrontEnd
    Workspace.Utilities
 
 Module contents

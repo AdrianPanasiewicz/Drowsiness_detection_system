@@ -1,10 +1,10 @@
 import math
 import numpy as np
 from typing import Tuple, Any
-from .parameter_finder import ParameterFinder
+from .param_finder import ParamFinder
 
 
-class FaceAngleFinder(ParameterFinder):
+class AngleFinder(ParamFinder):
     """
     Klasa odpowiedzialna za wyznaczanie kąta pochylenia twarzy (roll i pitch)
     na podstawie wybranych wskaźników (landmarków) twarzy pochodzących z MediaPipe.
@@ -12,7 +12,7 @@ class FaceAngleFinder(ParameterFinder):
 
     def __init__(self, roll_memory_size = 15, pitch_memory_size = 15) -> None:
         """
-        Inicjalizuje obiekt FaceAngleFinder poprzez zdefiniowanie zbioru par indeksów,
+        Inicjalizuje obiekt AngleFinder poprzez zdefiniowanie zbioru par indeksów,
         na których będzie przeprowadzana analiza kąta pochylenia twarzy.
         """
         self.face_oval_indices: np.ndarray = np.array([[109, 148], [10, 152], [338, 377]])
@@ -21,7 +21,7 @@ class FaceAngleFinder(ParameterFinder):
 
     def find_parameter(self, face_coords: Any) -> Tuple[float, float]:
         """
-        Główna metoda interfejsu ParameterFinder. Zwraca kąt przechylenia (roll)
+        Główna metoda interfejsu ParamFinder. Zwraca kąt przechylenia (roll)
         i kąt pochylenia (pitch) twarzy dla przekazanego zestawu współrzędnych.
 
         :param face_coords: Wynik działania biblioteki MediaPipe, zawierający

@@ -2,7 +2,7 @@ import abc
 from typing import Any
 
 
-class ParameterFinder(metaclass=abc.ABCMeta):
+class ParamFinder(metaclass=abc.ABCMeta):
     """
     Klasa abstrakcyjna odpowiedzialna za wyznaczanie konkretnego
     parametru na podstawie współrzędnych twarzy.
@@ -11,7 +11,7 @@ class ParameterFinder(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __init__(self) -> None:
         """
-        Konstruktor klasy abstrakcyjnej ParameterFinder.
+        Konstruktor klasy abstrakcyjnej ParamFinder.
         """
         pass
 

@@ -1,8 +1,8 @@
 import time
 import numpy as np
-from .parameter_finder import ParameterFinder
+from .param_finder import ParamFinder
 
-class SaccadeVelocityFinder(ParameterFinder):
+class SaccadeVel(ParamFinder):
     """
     Klasa odpowiedzialna za obliczanie prędkości ruchów sakkadowych oczu na podstawie
     pozycji tęczówki (iris) w kolejnych klatkach. Dodatkowo uwzględnia ruch głowy,
@@ -11,7 +11,7 @@ class SaccadeVelocityFinder(ParameterFinder):
 
     def __init__(self):
         """
-        Inicjalizuje obiekt SaccadeVelocityFinder, definiując indeksy tęczówek (lewej i prawej)
+        Inicjalizuje obiekt SaccadeVel, definiując indeksy tęczówek (lewej i prawej)
         oraz struktury przechowujące poprzednie stany (pozycje, czas) do obliczania
         prędkości ruchu.
         """
@@ -24,7 +24,7 @@ class SaccadeVelocityFinder(ParameterFinder):
 
     def find_parameter(self, face_coords) -> float:
         """
-        Główna metoda z interfejsu ParameterFinder. Oblicza średnią prędkość (sakkady)
+        Główna metoda z interfejsu ParamFinder. Oblicza średnią prędkość (sakkady)
         na podstawie dwóch tęczówek (prawej i lewej).
 
         :param face_coords: Wyniki analizy MediaPipe (multi_face_landmarks).

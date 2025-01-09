@@ -148,7 +148,7 @@ def main():
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
         find_yawn = yawn_finder.YawnFinder(yawn_threshold)
-        find_face_tilt = face_angle_finder.FaceAngleFinder()
+        find_face_tilt = angle_finder.AngleFinder()
         random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=50)
 
         # Inicjalizuje kamerę
@@ -186,7 +186,7 @@ def main():
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
         find_yawn = yawn_finder.YawnFinder(yawn_threshold, is_image_mode=True)
-        find_face_tilt = face_angle_finder.FaceAngleFinder()
+        find_face_tilt = angle_finder.AngleFinder()
 
         if not pathlib.Path(image_folder).is_dir():
             print(f"Podany folder z obrazami nie istnieje lub nie jest katalogiem: {image_folder}")

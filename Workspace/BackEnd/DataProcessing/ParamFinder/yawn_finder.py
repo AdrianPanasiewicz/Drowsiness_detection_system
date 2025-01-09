@@ -1,8 +1,8 @@
 import numpy as np
-from .parameter_finder import ParameterFinder
+from .param_finder import ParamFinder
 
 
-class YawnFinder(ParameterFinder):
+class YawnFinder(ParamFinder):
     """
     Klasa odpowiedzialna za wykrywanie ziewania na podstawie
     proporcji (stosunku pionowej wysokości ust do jej szerokości).
@@ -28,7 +28,7 @@ class YawnFinder(ParameterFinder):
 
     def find_parameter(self, face_coords) -> tuple:
         """
-        Główna metoda interfejsu ParameterFinder. Zwraca informację,
+        Główna metoda interfejsu ParamFinder. Zwraca informację,
         czy użytkownik ziewa, liczbę dotychczasowych ziewnięć oraz
         aktualny stosunek ust (MAR - Mouth Aspect Ratio).
 

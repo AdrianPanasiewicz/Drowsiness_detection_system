@@ -1,9 +1,9 @@
 import numpy as np
 from typing import Any, List, Tuple
-from .parameter_finder import ParameterFinder
+from .param_finder import ParamFinder
 
 
-class PerclosFinder(ParameterFinder):
+class PerclosFinder(ParamFinder):
     """
     Klasa odpowiedzialna za obliczanie współczynnika PERCLOS (procent czasu, w którym
     powieki są zamknięte) na podstawie wartości EAR (Eye Aspect Ratio) dla lewego i prawego oka.
