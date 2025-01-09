@@ -1,3 +1,10 @@
+#
+#                       LEGACY CODEBASE
+#
+# Ze względu na niezadowalające wyniki oraz niemal całkowity brak literatury naukowej
+# wspierającej zastosowanie prędkości ruchów sakkadowych, podjęto decyzję o rezygnacji
+# z wykorzystania tej klasy w systemie do wykrywania senności.
+
 import time
 import numpy as np
 from .param_finder import ParamFinder
