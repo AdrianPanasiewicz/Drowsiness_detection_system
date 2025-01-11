@@ -44,6 +44,7 @@ class PerclosFinder(ParamFinder):
             perclos = self._calculate_perclos(left_ear[0], right_ear[0], 1)
             self.previous_perclos = perclos
             mean_ear = (left_ear[0] + right_ear[0]) / 2
+            mean_ear = np.clip(mean_ear, 0, 1)
         else:
             perclos = 0.0
             mean_ear = 0.0
@@ -116,7 +117,7 @@ class PerclosFinder(ParamFinder):
         :return: Procent klatek, w których oczy były uznane za zamknięte.
         :rtype: float
         """
-        period = 900  # liczba klatek uwzględnianych w pamięci (np. 900 ~ 30s przy 30 FPS)
+        period = 1800  # liczba klatek uwzględnianych w pamięci (np. 1800 ~ 60s przy 60 FPS)
 
         # Usunięcie najstarszego wpisu, jeśli osiągnięto limit 'period'
         if len(self.ear_per_face_memory[memory_key]) >= period:
