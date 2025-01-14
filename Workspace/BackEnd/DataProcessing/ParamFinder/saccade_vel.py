@@ -1,5 +1,5 @@
 #
-#                       LEGACY CODEBASE
+#                               LEGACY CODEBASE
 #
 # Ze względu na niezadowalające wyniki oraz niemal całkowity brak literatury naukowej
 # wspierającej zastosowanie prędkości ruchów sakkadowych, podjęto decyzję o rezygnacji
@@ -24,9 +24,7 @@ class SaccadeVel(ParamFinder):
         """
         self.right_iris_indices = np.array([469, 470, 471, 472])
         self.left_iris_indices = np.array([474, 475, 476, 477])
-        # [select_iris][index][(x, y, z, time)]
         self.iris_previous_state = np.zeros((2, 4, 4))
-        # [select_iris][index][(x, y, z)]
         self.landmark_previous_state = np.zeros((2, 2, 3))
 
     def find_parameter(self, face_coords) -> float:
@@ -124,7 +122,7 @@ class SaccadeVel(ParamFinder):
         tick1 = time.time()
 
         distance = np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
-        delta_t = tick1 - tick2 if tick2 > 0 else 1e-6  # by uniknąć dzielenia przez zero
+        delta_t = tick1 - tick2 if tick2 > 0 else 1e-6
 
         adjust_by_distance = self.adjust_speed_to_landmarks(adjust_to_landmarks, select_iris, face_mesh)
         saccade_velocity = (distance - adjust_by_distance) / delta_t
