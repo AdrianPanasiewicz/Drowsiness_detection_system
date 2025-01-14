@@ -149,7 +149,7 @@ def main():
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
         find_yawn = yawn_finder.YawnFinder(yawn_threshold)
         find_face_tilt = angle_finder.AngleFinder()
-        random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=50)
+        random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=60)
 
         # Inicjalizuje kamerę
         try:

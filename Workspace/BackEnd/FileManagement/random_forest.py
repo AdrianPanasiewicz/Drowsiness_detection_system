@@ -16,7 +16,7 @@ class RandomForest:
     # Domyślne ścieżki względne do modeli
     default_relative_model_locations: List[str] = [r'Models\random_forest_drowsiness_model.pkl']
 
-    def __init__(self, activation_certainty: float = 0.5, prediction_memory_size: int = 20) -> None:
+    def __init__(self, activation_certainty: float = 0.5, prediction_memory_size: int = 60) -> None:
         """
         Inicjalizuje obiekt RandomForest, ustala ścieżki do modeli
         zawartych w domyślnej liście 'default_relative_model_locations'
