@@ -82,12 +82,13 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
             is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
             roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
 
-            if 0.1 <= perclos < 0.2:
+
+            if perclos >= 0.25:
+                prediction = True
+            elif 0.125 <= perclos < 0.25:
                 cols = ["MAR", "EAR", "Roll", "Pitch"]
                 data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
                 prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
-            elif perclos >= 0.2:
-                prediction = True
             else:
                 prediction = False
 
