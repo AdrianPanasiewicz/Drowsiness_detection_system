@@ -95,7 +95,6 @@ class AngleFinder(ParamFinder):
         delta_z = z2 - z1
 
         # Obliczenia kątów w stopniach (atan2 zwraca wynik w radianach).
-        roll = math.atan2(abs(delta_z), delta_x) * 180.0 / math.pi - 90.0
-        pitch = math.atan2(delta_z, abs(delta_y)) * 180.0 / math.pi
-
+        roll = math.atan2(delta_y, delta_x) * 180.0 / math.pi + 90
+        pitch = math.atan2(delta_y, delta_z) * 180.0 / math.pi + 90
         return roll, pitch

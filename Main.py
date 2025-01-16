@@ -54,7 +54,8 @@ def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver
             "Pitch": pitch,
             "EAR": ear,
             "PERCLOS": perclos,
-            "Obecna sennosc": prediction
+            "Obecna sennosc": prediction,
+            "FPS": fps
         }
         sql_saver_inst.save_to_csv(packet)
 
@@ -102,11 +103,11 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
             packet = {
                 "Obraz": str(image_path.name),
                 "MAR": mar,
-                "Obecne ziewniecie": is_jawning,
+                "Obecne_ziewniecie": is_jawning,
                 "Roll": roll,
                 "Pitch": pitch,
                 "EAR": ear,
-                "Obecna sennosc": prediction
+                "Obecna_sennosc": drowsiness_label
             }
             sql_saver_inst.save_to_csv(packet)
 
@@ -119,7 +120,7 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
 
 def main():
 
-    mode = "camera"
+    mode = "image"
     results_name = "results.csv"
 
     image_folder = pathlib.Path(r"C:\Users\adria\Documents\drowsiness_dataset")
@@ -187,7 +188,7 @@ def main():
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
         find_yawn = yawn_finder.YawnFinder(yawn_threshold, is_image_mode=True)
-        find_face_tilt = angle_finder.AngleFinder()
+        find_face_tilt = angle_finder.AngleFinder(roll_memory_size = 1, pitch_memory_size=1)
 
         if not pathlib.Path(image_folder).is_dir():
             print(f"Podany folder z obrazami nie istnieje lub nie jest katalogiem: {image_folder}")
