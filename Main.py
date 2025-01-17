@@ -120,7 +120,7 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
 
 def main():
 
-    mode = "image"
+    mode = "camera"
     results_name = "results.csv"
 
     image_folder = pathlib.Path(r"C:\Users\adria\Documents\drowsiness_dataset")
