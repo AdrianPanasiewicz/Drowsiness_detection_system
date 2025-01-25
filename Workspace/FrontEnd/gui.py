@@ -50,7 +50,7 @@ class GUI:
         self.window.title("System wykrywania senności")
         self.window.resizable(False, False)
 
-        # Ścieżka do bieżącego pliku – używana np. do ładowania zasobów (obrazów tła).
+        # Ścieżka do bieżącego pliku – używana do ładowania zasobów (obrazów tła).
         if getattr(sys, 'frozen', False):
             base_dir = pathlib.Path(sys.executable).parent
         else:
