@@ -1,9 +1,10 @@
 import os
 import pathlib
 import numpy as np
+import sys
 import pickle
 from pandas import DataFrame
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 
 class RandomForest:
@@ -13,8 +14,7 @@ class RandomForest:
     jak również dodawać nowe ścieżki do modeli.
     """
 
-    # Domyślne ścieżki względne do modeli
-    default_relative_model_locations: List[str] = [r'Models\random_forest_drowsiness_model.pkl']
+
 
     def __init__(self, activation_certainty: float = 0.5, prediction_memory_size: int = 60) -> None:
         """
@@ -32,20 +32,21 @@ class RandomForest:
 
         # Wartość progowa, powyżej której uznawana jest senność
         self.activation_certainty: float = activation_certainty
-
         # Bufor do przechowywania ostatnich predykcji (True/False)
         self.prediction_memory: np.ndarray = np.zeros(prediction_memory_size, dtype=bool)
 
-        # Dodanie domyślnych ścieżek modeli do słownika self.model_paths
-        for path in self.default_relative_model_locations:
-            _working_dir = pathlib.Path(__file__).parent.parent.parent
-            _model_full_path = _working_dir / pathlib.Path(path)
-            filename = os.path.basename(_model_full_path)
-            # Odcinamy rozszerzenie ".pkl" i używamy pozostałej części jako klucza
-            self.model_paths[filename[:-4]] = _model_full_path
+        base_dir = pathlib.Path(sys.argv[0]).parent  # The folder containing the .exe
+        pkl_path = base_dir / "Models" / "random_forest_drowsiness_model.pkl"
 
-        # Wczytanie głównego modelu (np. "random_forest_drowsiness_model")
-        self.random_forest = self.load_models()["random_forest_drowsiness_model"]
+
+        # Dodanie domyślnych ścieżek modeli do słownika self.model_paths
+        try:
+            with open(pkl_path, "rb") as f:
+                self.random_forest = pickle.load(f)
+        except Exception as e:
+            print(f"Not loaded. Error: {e}")
+            raise e
+
 
     def save_model_path_from_relative_path(self, relative_path: str) -> None:
         """

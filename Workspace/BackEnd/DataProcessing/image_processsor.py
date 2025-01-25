@@ -17,7 +17,13 @@ class ImageProcessor:
         """
         self._mp_draw = solutions.drawing_utils
         self._mp_face_mesh = solutions.face_mesh
-        self._face_mesh = self._mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True)
+        try:
+            self._face_mesh = self._mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True)
+            print("FaceMesh created successfully.")
+        except Exception as e:
+            print("ERROR creating FaceMesh:", e)
+            raise
+
         self._draw_spec = self._mp_draw.DrawingSpec(thickness=1, circle_radius=1, color=(0, 255, 0))
 
     @staticmethod

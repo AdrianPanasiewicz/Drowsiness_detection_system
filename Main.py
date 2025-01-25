@@ -123,6 +123,7 @@ def main():
     mode = "camera"
     results_name = "results.csv"
 
+
     image_folder = pathlib.Path(r"C:\Users\adria\Documents\drowsiness_dataset")
     train_folder = image_folder / r"train\images"
     val_folder = image_folder / r"valid\images"
@@ -131,15 +132,12 @@ def main():
     validating_name = "validating_data.csv"
     testing_name = "testing_data.csv"
 
-
     # Naprawia pathlib dla systemu Windows, jeśli to konieczne
     pathlib.PosixPath = Utils.fix_pathlib()
 
     # Inicjalizuje klasy związane z systemem
     image_processor_inst = ImageProcessor()
     coordinates_parser_inst = CoordinatesParser()
-
-    os.system('cls' if os.name == 'nt' else 'clear')
 
     # Ustawia progi dla PERCLOS i ziewania
     perclos_threshold = 0.2
@@ -163,7 +161,10 @@ def main():
             sys.exit(1)
 
         # Inicjalizuje GUI
-        gui_display = GUI()
+        try:
+            gui_display = GUI()
+        except Exception as e:
+            print(e)
 
         # Rozpoczyna analizę w osobnym wątku
         analysis_thread = threading.Thread(
@@ -225,5 +226,8 @@ def main():
             random_forest_classifier
         )
 
-
-main()
+try:
+    main()
+except Exception as exc:
+    print(exc)
+    raise exc

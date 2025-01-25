@@ -21,6 +21,7 @@ class SqlSaver:
         self.working_directory = pathlib.Path(__file__).parent.parent.parent
         relative_saving_path = fr'Results\{filename}'
         self.saving_path= self.working_directory / relative_saving_path
+        self.saving_path.parent.mkdir(parents=True, exist_ok=True)
         self.index = 0
         self.change_name_if_exists()
 
