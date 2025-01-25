@@ -35,17 +35,15 @@ class RandomForest:
         # Bufor do przechowywania ostatnich predykcji (True/False)
         self.prediction_memory: np.ndarray = np.zeros(prediction_memory_size, dtype=bool)
 
-        base_dir = pathlib.Path(sys.argv[0]).parent  # The folder containing the .exe
+        if getattr(sys, 'frozen', False):
+            base_dir = pathlib.Path(sys.executable).parent
+        else:
+            base_dir = pathlib.Path(__file__).parent.parent.parent
+
         pkl_path = base_dir / "Models" / "random_forest_drowsiness_model.pkl"
 
-
-        # Dodanie domyślnych ścieżek modeli do słownika self.model_paths
-        try:
-            with open(pkl_path, "rb") as f:
-                self.random_forest = pickle.load(f)
-        except Exception as e:
-            print(f"Not loaded. Error: {e}")
-            raise e
+        with open(pkl_path, "rb") as f:
+            self.random_forest = pickle.load(f)
 
 
     def save_model_path_from_relative_path(self, relative_path: str) -> None:
