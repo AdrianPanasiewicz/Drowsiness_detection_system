@@ -5,16 +5,14 @@ This project is an implementation of a real-time system that detects drowsiness 
 ## Installation
 Clone this repository:
 
-    ```bash
     git clone https://github.com/AdrianPanasiewicz/Drowsiness_detection_system.git
-    ```
+
 
 ## Usage
 Run the main script to start the detection system:
 
-    ```bash
     python main.py
-    ```
+
 
 ## Contributing
 Feel free to open issues or pull requests. Contributions are welcome to improve detection accuracy, add new features, and optimize performance.
