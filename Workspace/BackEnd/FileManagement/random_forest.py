@@ -36,7 +36,7 @@ class RandomForest:
         self.prediction_memory: np.ndarray = np.zeros(prediction_memory_size, dtype=bool)
 
         base_dir = pathlib.Path(sys.argv[0]).parent  # The folder containing the .exe
-        pkl_path = base_dir / "Models" / "random_forest_drowsiness_model.pkl"
+        pkl_path = base_dir / "Workspace" / "Models" / "random_forest_drowsiness_model.pkl"
 
 
         # Dodanie domyślnych ścieżek modeli do słownika self.model_paths
