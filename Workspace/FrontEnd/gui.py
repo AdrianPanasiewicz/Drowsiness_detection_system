@@ -4,7 +4,8 @@ from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
-import os
+import sys
+import pathlib
 import cv2
 from Workspace.FrontEnd.face_plotter import FacePlotter
 from typing import Optional, Union
@@ -49,14 +50,19 @@ class GUI:
         self.window.title("System wykrywania senności")
         self.window.resizable(False, False)
 
-        # Ścieżka do bieżącego pliku – używana np. do ładowania zasobów (obrazów tła).
-        self.current_path = os.path.dirname(os.path.realpath(__file__))
+        # Ścieżka do bieżącego pliku – używana do ładowania zasobów (obrazów tła).
+        if getattr(sys, 'frozen', False):
+            base_dir = pathlib.Path(sys.executable).parent
+        else:
+            base_dir = pathlib.Path(__file__).parent.parent.parent
 
-        # Ładowanie i ustawianie obrazu tła w głównym oknie (użycie metody place).
+        bg_image_path = base_dir / "Workspace" / "FrontEnd" / "Background_Images" / "gray_bg_img.jpeg"
+
         self.bg_image = customtkinter.CTkImage(
-            Image.open(self.current_path + "/Background_Images/gray_bg_img.jpeg"),
+            Image.open(bg_image_path),
             size=(self.width, self.height)
         )
+
         self.bg_image_label = customtkinter.CTkLabel(self.window, text="", image=self.bg_image)
         self.bg_image_label.place(x=0, y=0, relwidth=1, relheight=1)
 
