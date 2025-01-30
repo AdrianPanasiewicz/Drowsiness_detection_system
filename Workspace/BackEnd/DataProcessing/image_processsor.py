@@ -19,7 +19,6 @@ class ImageProcessor:
         self._mp_face_mesh = solutions.face_mesh
         try:
             self._face_mesh = self._mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True)
-            print("FaceMesh created successfully.")
         except Exception as e:
             print("ERROR creating FaceMesh:", e)
             raise
