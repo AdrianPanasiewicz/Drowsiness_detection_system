@@ -47,7 +47,7 @@ class GUI:
         # Tworzenie głównego okna aplikacji.
         self.window = customtkinter.CTk()
         self.window.geometry(f"{self.width}x{self.height}")
-        self.window.title("System wykrywania senności")
+        self.window.title("Drowsiness Detection System")
         self.window.resizable(False, False)
 
         # Ścieżka do bieżącego pliku – używana do ładowania zasobów (obrazów tła).
@@ -72,14 +72,14 @@ class GUI:
 
         self.appearance_mode_menu = customtkinter.CTkOptionMenu(
             self.bottom_frame,
-            values=["Ciemny", "Jasny", "Systemowy"],
+            values=["Dark", "Light", "System"],
             command=self.change_appearance
         )
         self.appearance_mode_menu.pack(side="left", padx=20, pady=10)
 
         self.info_button = customtkinter.CTkButton(
             self.bottom_frame,
-            text="O programie",
+            text="About application",
             command=self.show_info_window
         )
         self.info_button.pack(side="right", padx=20, pady=10)
@@ -91,7 +91,7 @@ class GUI:
         # Etykieta tytułowa w ramce kamery.
         self.webcam_label = customtkinter.CTkLabel(
             self.webcam_frame,
-            text="Kamera",
+            text="Camera",
             font=("JetBrains Mono", 40, 'bold')
         )
         self.webcam_label.pack(pady=20, padx=20)
@@ -107,7 +107,7 @@ class GUI:
         # Etykieta tytułowa dla wizualizacji 3D.
         self.plot_label = customtkinter.CTkLabel(
             self.plot_frame,
-            text="Wizualizacja 3D twarzy",
+            text="3D face visualisation",
             font=("JetBrains Mono", 40, 'bold')
         )
         self.plot_label.pack(pady=20, padx=20)
@@ -145,7 +145,7 @@ class GUI:
         # Etykieta tytułowa w ramce parametrów.
         self.params_title = customtkinter.CTkLabel(
             self.params_info_upper_layer,
-            text="Parametry:",
+            text="Parameters:",
             font=("JetBrains Mono", 40, 'bold')
         )
         self.params_title.pack(pady=20, padx=20)
@@ -156,7 +156,7 @@ class GUI:
                 self.params_info_mid_layer,
                 text=text,
                 width=width,
-                font=("JetBrains Mono", 20),
+                font=("JetBrains Mono", 24, "bold"),
                 anchor="w"
             )
             return label
@@ -164,14 +164,14 @@ class GUI:
         # Listy przechowujące etykiety (nazwa parametru) i ich wartości.
         self.label_list = []
         self.value_list = []
-        parameters_name = ["MAR:", "Ziewanie:", "Liczba ziewnięć:", "Roll:", "Pitch:", "EAR:", "PERCLOS:"]
+        parameters_name = ["Roll:", "Pitch:", "MAR:", "EAR:", "PERCLOS:"]
 
         # Tworzenie etykiet i przypisywanie ich do gridu.
         for i in range(len(parameters_name)):
             self.label_list.append(_create_label_in_params(parameters_name[i]))
             self.value_list.append(_create_label_in_params("None"))
-            self.label_list[i].grid(row=i, column=0, sticky='W', padx=(25, 0), pady=3)
-            self.value_list[i].grid(row=i, column=1, sticky='W', padx=(25, 10), pady=3)
+            self.label_list[i].grid(row=i, column=0, sticky='W', padx=(40, 0), pady=11)
+            self.value_list[i].grid(row=i, column=1, sticky='W', padx=(15, 10), pady=11)
 
         # Ramka (frame) do prezentowania stanu operatora.
         self.prediction_frame = customtkinter.CTkFrame(self.params_frame)
@@ -180,7 +180,7 @@ class GUI:
         # Etykieta tytułowa dotycząca stanu operatora.
         self.prediction_title = customtkinter.CTkLabel(
             self.prediction_frame,
-            text=f"Stan operatora:",
+            text=f"Pilot state:",
             font=("JetBrains Mono", 30, 'bold'),
         )
         self.prediction_title.pack(pady=10, padx=20)
@@ -203,36 +203,33 @@ class GUI:
         celu aplikacji i sposobu jej obsługi.
         """
         info_window = customtkinter.CTkToplevel(self.window)
-        info_window.title("O programie")
+        info_window.title("About application")
         info_window.geometry("500x380")
 
         # Ustawienie parametru topmost, aby okno z informacjami było na wierzchu.
         info_window.attributes("-topmost", 1)
 
-        info_test = """        Autor: Adrian Paweł Panasiewicz  
-        Tytuł pracy dyplomowej: Projekt wstępny systemu bezpieczeństwa do wykrywania 
-                                                senności u pilotów bezzałogowych 
-                                                statków powietrznych  
+        info_test = """Author: Adrian Paweł Panasiewicz
+Thesis Title: Preliminary design of a safety system for detecting drowsiness in UAV pilots.
 
-        Cel aplikacji:
-        Aplikacja została zaprojektowana w celu monitorowania stanu senności 
-        operatorów dronów w czasie rzeczywistym. Analizuje obraz z kamery 
-        i wyświetla parametry takie jak PERCLOS, ziewanie, czy pochylenie 
-        głowy. W przypadku wykrycia krytycznych wartości system generuje 
-        alerty wizualne.
+Application Purpose:
+The application is designed to monitor drone operators' drowsiness in real-time. 
+It analyzes the camera feed and displays parameters such as percentage 
+of eye closure (PERCLOS), eye aspect ratio (EAR), mouth aspect ratio (MAR) 
+and head tilt angles (pitch and roll). If critical values are detected, the 
+system generates visual alert.
 
-        Jak obsługiwać aplikację:
-        1. Uruchom plik wykonywalny aplikacji na systemie Windows 10/11.
-        2. Podłącz kamerę zgodną z minimalnymi wymaganiami (720p, 30 FPS).
-        3. Ustaw kamerę tak, aby rejestrowała twarz operatora w dobrych 
-           warunkach oświetleniowych.
-        4. Obserwuj dane wyjściowe na interfejsie graficznym aplikacji (GUI).
+How to Use the Application:
+>Run the application executable on a Windows 10/11 system.
+>Connect a camera that meets the minimum requirements (720p, 30 FPS).
+>Position the camera to capture the operator's face in good lighting conditions.
+>Observe the output data on the application's graphical user interface (GUI).
 
-        Uwaga:
-        - Aplikacja obsługuje tylko jedną twarz w kadrze.
-        - Stabilne oświetlenie i minimalne ruchy kamery poprawiają dokładność analizy.
-        - Wszelkie dane są zapisywane w bazie danych, umożliwiając późniejszą analizę.
-        """
+Note:
+>The application supports only one face in the frame.
+>Stable lighting and minimal camera movement improve analysis accuracy.
+>All data is stored in a database for later analysis.
+"""
 
         info_label = customtkinter.CTkLabel(
             info_window,
@@ -318,15 +315,21 @@ class GUI:
         :param new_appearance_mode: Wybrany styl: "Jasny", "Ciemny" lub "Systemowy".
         :type new_appearance_mode: str
         """
-        mode_dict = {"Jasny": "Light", "Ciemny": "Dark", "Systemowy": "System"}
+        mode_dict = {"Light": "Light", "Dark": "Dark", "System": "System"}
         customtkinter.set_appearance_mode(mode_dict[new_appearance_mode])
 
-        if mode_dict[new_appearance_mode] == "Light":
-            bg_image_path = self.current_path + "/Background_Images/white_bg_img.png"
-        elif mode_dict[new_appearance_mode] == "Dark":
-            bg_image_path = self.current_path + "/Background_Images/gray_bg_img.jpeg"
+        # Ścieżka do bieżącego pliku – używana do ładowania zasobów (obrazów tła).
+        if getattr(sys, 'frozen', False):
+            base_dir = pathlib.Path(sys.executable).parent
         else:
-            bg_image_path = self.current_path + "/Background_Images/gray_bg_img.jpeg"
+            base_dir = pathlib.Path(__file__).parent.parent.parent
+
+        if mode_dict[new_appearance_mode] == "Light":
+            bg_image_path = base_dir / "Workspace" / "FrontEnd" / "Background_Images" / "white_bg_img.png"
+        elif mode_dict[new_appearance_mode] == "Dark":
+            bg_image_path = base_dir / "Workspace" / "FrontEnd" / "Background_Images" / "gray_bg_img.jpeg"
+        else:
+            bg_image_path = base_dir / "Workspace" / "FrontEnd" / "Background_Images" / "gray_bg_img.jpeg"
 
         # Aktualizacja obrazka tła (ponowne jego wczytanie i przypisanie do etykiety).
         self.bg_image = customtkinter.CTkImage(
@@ -378,50 +381,50 @@ class GUI:
                     fps
                 ) = self.data_queue.get_nowait()
 
-                # Uaktualnienie wartości MAR (Mouth Aspect Ratio).
-                self.value_list[0].configure(
-                    text=f"{round(mar, 2)}"
-                )
-
-                # Informacja o ziewaniu (Obecne/Brak).
-                self.value_list[1].configure(
-                    text=f'{"Obecne" if is_yawning else "Brak"}'
-                )
-
-                # Liczba ziewnięć zarejestrowanych podczas sesji.
-                self.value_list[2].configure(
-                    text=f'{yawn_counter}'
-                )
+                # # Informacja o ziewaniu (Obecne/Brak).
+                # self.value_list[1].configure(
+                #     text=f'{"Obecne" if is_yawning else "Brak"}'
+                # )
+                #
+                # # Liczba ziewnięć zarejestrowanych podczas sesji.
+                # self.value_list[2].configure(
+                #     text=f'{yawn_counter}'
+                # )
 
                 # Kąt przechyłu głowy (roll).
-                self.value_list[3].configure(
-                    text=f"{round(roll, 2)}"
+                self.value_list[0].configure(
+                    text=f"{round(roll, 2)}°"
                 )
 
                 # Kąt pochylenia głowy (pitch).
-                self.value_list[4].configure(
-                    text=f"{round(pitch, 2)}"
+                self.value_list[1].configure(
+                    text=f"{round(pitch, 2)}°"
+                )
+
+                # Uaktualnienie wartości MAR (Mouth Aspect Ratio).
+                self.value_list[2].configure(
+                    text=f"{round(mar, 2)}"
                 )
 
                 # Wskaźnik EAR (Eye Aspect Ratio).
-                self.value_list[5].configure(
+                self.value_list[3].configure(
                     text=f"{round(ear, 2)}"
                 )
 
                 # Wskaźnik PERCLOS wyrażony w procentach.
-                self.value_list[6].configure(
+                self.value_list[4].configure(
                     text=f"{round(100 * perclos, 2)}%"
                 )
 
                 # Interpretacja stanu operatora (Senny/Czujny/Brak operatora).
                 if prediction:
-                    pred_text = "Senny"
+                    pred_text = "Drowsy"
                     text_color = 'red'
                 elif prediction is None:
-                    pred_text = "Brak operatora"
+                    pred_text = "No operator"
                     text_color = 'yellow'
                 else:
-                    pred_text = "Czujny"
+                    pred_text = "Not drowsy"
                     text_color = '#0AAA08'
 
                 self.prediction_info.configure(
