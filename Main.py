@@ -5,6 +5,7 @@ import sys
 import pathlib
 import cv2
 import pandas as pd
+import re
 
 def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver_inst, find_perclos,
                 find_yawn, find_face_tilt, random_forest_classifier, gui_display_inst=None):
@@ -117,17 +118,23 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
 
     print(f"Przetwarzanie zakończone. Wyniki zapisane w {sql_saver_inst.saving_path}")
 
-def video_mode(video_path, image_processor_inst, sql_saver_inst, perclos_finder_inst,
-               yawn_finder_inst, face_angle_finder_inst, random_forest_classifier):
+def video_mode(video_path, image_processor_inst, perclos_finder_inst,
+               yawn_finder_inst, face_angle_finder_inst, random_forest_classifier, output_folder):
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Error opening video file: {video_path}")
         return
+    video_path  = str(video_path)
+    filename = re.search(r'([^\\]+)\.mp4$', video_path).group(1) + ".xlsx"
+
+    data_save_inst = DataSaver(
+        filename, save_path=output_folder)
 
     total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     frame_count = 0
     fps = cap.get(cv2.CAP_PROP_FPS)
+
 
     while True:
         ret, frame = cap.read()
@@ -163,7 +170,7 @@ def video_mode(video_path, image_processor_inst, sql_saver_inst, perclos_finder_
                 "Drowsy": prediction
             }
 
-            sql_saver_inst.save_to_csv(packet)
+            data_save_inst.save_to_excel(packet)
 
         if frame_count % 100 == 0:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -173,7 +180,7 @@ def video_mode(video_path, image_processor_inst, sql_saver_inst, perclos_finder_
     cap.release()
     os.system('cls' if os.name == 'nt' else 'clear')
     print(f"Processing complete. Total frames: {frame_count}")
-    print(f"Results saved to {sql_saver_inst.saving_path}")
+    print(f"Results saved to {data_save_inst.saving_path}")
 
 
 def main():
@@ -183,7 +190,7 @@ def main():
 
 
     image_folder = pathlib.Path(r"C:\Users\adria\Documents\drowsiness_dataset")
-    train_folder = image_folder / r"train\images"
+    validation_folder = image_folder / r"train\images"
     val_folder = image_folder / r"valid\images"
     test_folder = image_folder / "test\images"
     training_name = "training_data.csv"
@@ -202,7 +209,7 @@ def main():
     yawn_threshold = 0.5
 
     if mode == 'camera':
-        sql_saver = CsvSaver(results_name)
+        sql_saver = DataSaver(results_name)
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
         find_yawn = yawn_finder.YawnFinder(yawn_threshold)
@@ -240,9 +247,9 @@ def main():
         camera.release()
 
     elif mode == 'image':
-        sql_saver_training_inst = CsvSaver(training_name)
-        sql_saver_validating_inst = CsvSaver(validating_name)
-        sql_saver_testing_inst = CsvSaver(testing_name)
+        sql_saver_training_inst = DataSaver(training_name)
+        sql_saver_validating_inst = DataSaver(validating_name)
+        sql_saver_testing_inst = DataSaver(testing_name)
         random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=50)
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
@@ -255,7 +262,7 @@ def main():
 
         # Przetwarza obrazy
         image_mode(
-            train_folder,
+            validation_folder,
             image_processor_inst,
             sql_saver_training_inst,
             find_perclos,
@@ -285,13 +292,16 @@ def main():
         )
     elif mode == 'video':
 
-        train_folder = pathlib.Path(
-            r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Evaluation Dataset\004\004_glasses_mix.mp4")
-        output_folder = pathlib.Path(r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Processed_dataset")
-        training_output_name = pathlib.Path("output_data.csv")
-        saving_path = output_folder / training_output_name
+        training_folder = pathlib.Path(
+            r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Training Dataset")
+        validation_folder = pathlib.Path(
+            r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Evaluation Dataset")
 
-        sql_saver_training_inst = CsvSaver(training_output_name, save_path=saving_path)
+        training_output_folder = pathlib.Path(
+            r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Processed_dataset\Training")
+        validation_output_folder = pathlib.Path(
+            r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Processed_dataset\Validation")
+
         random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=50)
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
@@ -302,16 +312,31 @@ def main():
             print(f"Podany folder z obrazami nie istnieje lub nie jest katalogiem: {image_folder}")
             sys.exit(1)
 
-        # Przetwarza obrazy
-        video_mode(
-            train_folder,
-            image_processor_inst,
-            sql_saver_training_inst,
-            find_perclos,
-            find_yawn,
-            find_face_tilt,
-            random_forest_classifier
-        )
+
+        folder_paths = [f for f in pathlib.Path(validation_folder).iterdir() if f.is_dir()]
+        folder_count = 1
+        for folder in folder_paths:
+            video_count = 1
+            video_paths = [f for f in pathlib.Path(folder).iterdir() if f.is_file() and f.suffix == ".mp4"]
+            for video_path in video_paths:
+                print("===========================================================================")
+                print(f"Processing video: {video_path}")
+                video_mode(
+                    video_path,
+                    image_processor_inst,
+                    find_perclos,
+                    find_yawn,
+                    find_face_tilt,
+                    random_forest_classifier,
+                    validation_output_folder
+                )
+                print(f"Processing complete. At folder: {folder_count}/{len(folder_paths)}, videos done: {video_count}/{len(video_paths)}")
+                print("===========================================================================")
+                video_count += 1
+            folder_count += 1
+
+
+
 
 try:
     main()

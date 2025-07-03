@@ -2,9 +2,9 @@ import pathlib
 import pandas as pd
 from typing import Dict, Any
 
-class CsvSaver:
+class DataSaver:
     """
-    Klasa CsvSaver zapewnia funkcje umożliwiające zapisywanie danych w formacie CSV,
+    Klasa DataSaver zapewnia funkcje umożliwiające zapisywanie danych w formacie CSV,
     unikając przy tym nadpisania istniejących plików. Główne metody to:
     - save_to_csv(): dopisywanie danych do istniejącego pliku bądź tworzenie nowego.
     - change_name_if_exists(): automatyczne zmienianie nazwy pliku, jeśli plik o danej nazwie istnieje.
@@ -14,7 +14,7 @@ class CsvSaver:
 
     def __init__(self, filename: str = default_filename, save_path: pathlib.Path = None) -> None:
         """
-        Inicjalizuje obiekt CsvSaver, ustalając ścieżkę docelową pliku CSV i
+        Inicjalizuje obiekt DataSaver, ustalając ścieżkę docelową pliku CSV i
         zapewniając unikalną nazwę pliku (jeżeli istnieje konflikt nazw).
         """
         # Ustalanie ścieżki domyślnej, wychodząc z lokalizacji bieżącego pliku.
@@ -24,8 +24,7 @@ class CsvSaver:
             self.saving_path= self.working_directory / relative_saving_path
             self.saving_path.parent.mkdir(parents=True, exist_ok=True)
         else:
-            save_path = pathlib.Path(save_path)
-            self.saving_path = save_path
+            self.saving_path = pathlib.Path(save_path) / filename
         self.index = 0
         self.change_name_if_exists()
 
@@ -45,6 +44,27 @@ class CsvSaver:
             self.index += 1
         else:
             df.to_csv(self.saving_path)
+
+    def save_to_excel(self, data: Dict[str, Any]) -> None:
+        """
+        Zapisuje słownik 'data' do pliku CSV. Jeśli plik już istnieje, dane są dopisywane;
+        w przeciwnym razie tworzony jest nowy plik.
+
+        :param data: Słownik z danymi do zapisania w pliku CSV.
+        :type data: dict
+        :rtype: None
+        """
+        df = pd.DataFrame(data, index=[self.index])
+        # Jeśli plik istnieje, dopisz dane. W przeciwnym razie utwórz nowy plik.
+        if self.saving_path.exists():
+            with pd.ExcelWriter(
+                    self.saving_path, mode='a', if_sheet_exists='overlay') as writer:
+                df.to_excel(writer)
+            self.index += 1
+        else:
+            with pd.ExcelWriter(
+                    self.saving_path,) as writer:
+                df.to_excel(writer)
 
     def change_name_if_exists(self) -> None:
         """
