@@ -2,9 +2,9 @@ import pathlib
 import pandas as pd
 from typing import Dict, Any
 
-class SqlSaver:
+class CsvSaver:
     """
-    Klasa SqlSaver zapewnia funkcje umożliwiające zapisywanie danych w formacie CSV,
+    Klasa CsvSaver zapewnia funkcje umożliwiające zapisywanie danych w formacie CSV,
     unikając przy tym nadpisania istniejących plików. Główne metody to:
     - save_to_csv(): dopisywanie danych do istniejącego pliku bądź tworzenie nowego.
     - change_name_if_exists(): automatyczne zmienianie nazwy pliku, jeśli plik o danej nazwie istnieje.
@@ -12,16 +12,20 @@ class SqlSaver:
 
     default_filename = "results.csv"
 
-    def __init__(self, filename: str = default_filename) -> None:
+    def __init__(self, filename: str = default_filename, save_path: pathlib.Path = None) -> None:
         """
-        Inicjalizuje obiekt SqlSaver, ustalając ścieżkę docelową pliku CSV i
+        Inicjalizuje obiekt CsvSaver, ustalając ścieżkę docelową pliku CSV i
         zapewniając unikalną nazwę pliku (jeżeli istnieje konflikt nazw).
         """
         # Ustalanie ścieżki domyślnej, wychodząc z lokalizacji bieżącego pliku.
-        self.working_directory = pathlib.Path(__file__).parent.parent.parent
-        relative_saving_path = fr'Results\{filename}'
-        self.saving_path= self.working_directory / relative_saving_path
-        self.saving_path.parent.mkdir(parents=True, exist_ok=True)
+        if save_path is None:
+            self.working_directory = pathlib.Path(__file__).parent.parent.parent
+            relative_saving_path = fr'Results\{filename}'
+            self.saving_path= self.working_directory / relative_saving_path
+            self.saving_path.parent.mkdir(parents=True, exist_ok=True)
+        else:
+            save_path = pathlib.Path(save_path)
+            self.saving_path = save_path
         self.index = 0
         self.change_name_if_exists()
 

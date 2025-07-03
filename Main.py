@@ -117,10 +117,68 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
 
     print(f"Przetwarzanie zakończone. Wyniki zapisane w {sql_saver_inst.saving_path}")
 
+def video_mode(video_path, image_processor_inst, sql_saver_inst, perclos_finder_inst,
+               yawn_finder_inst, face_angle_finder_inst, random_forest_classifier):
+
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print(f"Error opening video file: {video_path}")
+        return
+
+    total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+    frame_count = 0
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        frame_count += 1
+        processed_frame, face_mesh_coords = image_processor_inst.process_face_image(
+            frame)
+
+        if face_mesh_coords:
+            perclos, ear = perclos_finder_inst.find_parameter(face_mesh_coords)
+            is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
+            roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
+
+            if perclos >= 0.25:
+                prediction = True
+            elif 0.125 <= perclos < 0.25:
+                cols = ["MAR", "EAR", "Roll", "Pitch"]
+                data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
+                prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
+            else:
+                prediction = False
+
+            packet = {
+                "Frame": frame_count,
+                "Timestamp": frame_count / fps,
+                "MAR": mar,
+                "Roll": roll,
+                "Pitch": pitch,
+                "EAR": ear,
+                "PERCLOS": perclos,
+                "Drowsy": prediction
+            }
+
+            sql_saver_inst.save_to_csv(packet)
+
+        if frame_count % 100 == 0:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print(f"Processing progress: {frame_count/total_frames*100:.2f}%")
+
+    # Cleanup
+    cap.release()
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print(f"Processing complete. Total frames: {frame_count}")
+    print(f"Results saved to {sql_saver_inst.saving_path}")
+
 
 def main():
 
-    mode = "camera"
+    mode = "video"
     results_name = "results.csv"
 
 
@@ -140,11 +198,11 @@ def main():
     coordinates_parser_inst = CoordinatesParser()
 
     # Ustawia progi dla PERCLOS i ziewania
-    perclos_threshold = 0.2
+    perclos_threshold = 0.3
     yawn_threshold = 0.5
 
     if mode == 'camera':
-        sql_saver = SqlSaver(results_name)
+        sql_saver = CsvSaver(results_name)
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
         find_yawn = yawn_finder.YawnFinder(yawn_threshold)
@@ -182,9 +240,9 @@ def main():
         camera.release()
 
     elif mode == 'image':
-        sql_saver_training_inst = SqlSaver(training_name)
-        sql_saver_validating_inst = SqlSaver(validating_name)
-        sql_saver_testing_inst = SqlSaver(testing_name)
+        sql_saver_training_inst = CsvSaver(training_name)
+        sql_saver_validating_inst = CsvSaver(validating_name)
+        sql_saver_testing_inst = CsvSaver(testing_name)
         random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=50)
 
         find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
@@ -220,6 +278,35 @@ def main():
             test_folder,
             image_processor_inst,
             sql_saver_testing_inst,
+            find_perclos,
+            find_yawn,
+            find_face_tilt,
+            random_forest_classifier
+        )
+    elif mode == 'video':
+
+        train_folder = pathlib.Path(
+            r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Evaluation Dataset\004\004_glasses_mix.mp4")
+        output_folder = pathlib.Path(r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Processed_dataset")
+        training_output_name = pathlib.Path("output_data.csv")
+        saving_path = output_folder / training_output_name
+
+        sql_saver_training_inst = CsvSaver(training_output_name, save_path=saving_path)
+        random_forest_classifier = RandomForest(activation_certainty=0.5, prediction_memory_size=50)
+
+        find_perclos = perclos_finder.PerclosFinder(perclos_threshold)
+        find_yawn = yawn_finder.YawnFinder(yawn_threshold)
+        find_face_tilt = angle_finder.AngleFinder()
+
+        if not pathlib.Path(image_folder).is_dir():
+            print(f"Podany folder z obrazami nie istnieje lub nie jest katalogiem: {image_folder}")
+            sys.exit(1)
+
+        # Przetwarza obrazy
+        video_mode(
+            train_folder,
+            image_processor_inst,
+            sql_saver_training_inst,
             find_perclos,
             find_yawn,
             find_face_tilt,
