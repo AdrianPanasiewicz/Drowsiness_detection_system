@@ -1,5 +1,6 @@
 import pathlib
 import pandas as pd
+import openpyxl
 from typing import Dict, Any
 
 class DataSaver:
@@ -54,17 +55,24 @@ class DataSaver:
         :type data: dict
         :rtype: None
         """
+
         df = pd.DataFrame(data, index=[self.index])
-        # Jeśli plik istnieje, dopisz dane. W przeciwnym razie utwórz nowy plik.
-        if self.saving_path.exists():
-            with pd.ExcelWriter(
-                    self.saving_path, mode='a', if_sheet_exists='overlay') as writer:
-                df.to_excel(writer)
-            self.index += 1
+        excel_path = self.saving_path.with_suffix(".xlsx")
+
+        if excel_path.exists():
+            with pd.ExcelWriter(excel_path,
+                                engine="openpyxl", mode="a",
+                                if_sheet_exists="overlay") as writer:
+                # Get current number of rows to place new data correctly
+                workbook = openpyxl.load_workbook(
+                    excel_path)
+                sheet = workbook.active
+                start_row = sheet.max_row + 1
+                df.to_excel(writer, index=False,
+                            header=False,
+                            startrow=start_row - 1)
         else:
-            with pd.ExcelWriter(
-                    self.saving_path,) as writer:
-                df.to_excel(writer)
+            df.to_excel(excel_path, index=False)
 
     def change_name_if_exists(self) -> None:
         """

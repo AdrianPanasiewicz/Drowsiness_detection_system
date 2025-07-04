@@ -6,6 +6,7 @@ import pathlib
 import cv2
 import pandas as pd
 import re
+from tqdm import tqdm
 
 def camera_mode(camera, image_processor_inst, coordinates_parser_inst, sql_saver_inst, find_perclos,
                 find_yawn, find_face_tilt, random_forest_classifier, gui_display_inst=None):
@@ -119,7 +120,7 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
     print(f"Przetwarzanie zakończone. Wyniki zapisane w {sql_saver_inst.saving_path}")
 
 def video_mode(video_path, image_processor_inst, perclos_finder_inst,
-               yawn_finder_inst, face_angle_finder_inst, random_forest_classifier, output_folder):
+               yawn_finder_inst, face_angle_finder_inst, random_forest_classifier, output_folder, pbar=None):
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -135,52 +136,55 @@ def video_mode(video_path, image_processor_inst, perclos_finder_inst,
     frame_count = 0
     fps = cap.get(cv2.CAP_PROP_FPS)
 
+    with tqdm(total=total_frames, desc="Processed frames") as pbar_video:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
+            frame_count += 1
+            processed_frame, face_mesh_coords = image_processor_inst.process_face_image(
+                frame)
 
-        frame_count += 1
-        processed_frame, face_mesh_coords = image_processor_inst.process_face_image(
-            frame)
+            if face_mesh_coords:
+                perclos, ear = perclos_finder_inst.find_parameter(face_mesh_coords)
+                is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
+                roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
 
-        if face_mesh_coords:
-            perclos, ear = perclos_finder_inst.find_parameter(face_mesh_coords)
-            is_jawning, yawn_counter, mar = yawn_finder_inst.find_parameter(face_mesh_coords)
-            roll, pitch = face_angle_finder_inst.find_parameter(face_mesh_coords)
+                if perclos >= 0.25:
+                    prediction = True
+                elif 0.125 <= perclos < 0.25:
+                    cols = ["MAR", "EAR", "Roll", "Pitch"]
+                    data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
+                    prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
+                else:
+                    prediction = False
 
-            if perclos >= 0.25:
-                prediction = True
-            elif 0.125 <= perclos < 0.25:
-                cols = ["MAR", "EAR", "Roll", "Pitch"]
-                data_for_prediction = pd.DataFrame([[mar, ear, roll, pitch]], columns=cols)
-                prediction = random_forest_classifier.moving_mode_value_prediction(data_for_prediction)
-            else:
-                prediction = False
+                packet = {
+                    "Frame": frame_count,
+                    "Timestamp": frame_count / fps,
+                    "MAR": mar,
+                    "Roll": roll,
+                    "Pitch": pitch,
+                    "EAR": ear,
+                    "PERCLOS": perclos,
+                    "Drowsy": prediction
+                }
 
-            packet = {
-                "Frame": frame_count,
-                "Timestamp": frame_count / fps,
-                "MAR": mar,
-                "Roll": roll,
-                "Pitch": pitch,
-                "EAR": ear,
-                "PERCLOS": perclos,
-                "Drowsy": prediction
-            }
+                data_save_inst.save_to_excel(packet)
 
-            data_save_inst.save_to_excel(packet)
-
-        if frame_count % 100 == 0:
-            os.system('cls' if os.name == 'nt' else 'clear')
-            print(f"Processing progress: {frame_count/total_frames*100:.2f}%")
-
-    # Cleanup
+            refresh_tempo = 50
+            if frame_count % refresh_tempo == 0:
+                if pbar_video:
+                    pbar_video.update(refresh_tempo)
+                    print("\n")
+                    if pbar:
+                        pbar.refresh()
+                    pbar_video.refresh()
     cap.release()
     os.system('cls' if os.name == 'nt' else 'clear')
-    print(f"Processing complete. Total frames: {frame_count}")
-    print(f"Results saved to {data_save_inst.saving_path}")
+    # print(f"Processing complete. Total frames: {frame_count}")
+    # print(f"Results saved to {data_save_inst.saving_path}")
 
 
 def main():
@@ -312,31 +316,36 @@ def main():
             print(f"Podany folder z obrazami nie istnieje lub nie jest katalogiem: {image_folder}")
             sys.exit(1)
 
-
         folder_paths = [f for f in pathlib.Path(validation_folder).iterdir() if f.is_dir()]
-        folder_count = 1
+        total_count = 0
+        processed_count = 0
+
         for folder in folder_paths:
-            video_count = 1
             video_paths = [f for f in pathlib.Path(folder).iterdir() if f.is_file() and f.suffix == ".mp4"]
-            for video_path in video_paths:
-                print("===========================================================================")
-                print(f"Processing video: {video_path}")
-                video_mode(
-                    video_path,
-                    image_processor_inst,
-                    find_perclos,
-                    find_yawn,
-                    find_face_tilt,
-                    random_forest_classifier,
-                    validation_output_folder
-                )
-                print(f"Processing complete. At folder: {folder_count}/{len(folder_paths)}, videos done: {video_count}/{len(video_paths)}")
-                print("===========================================================================")
-                video_count += 1
-            folder_count += 1
+            total_count += len(video_paths)
 
 
-
+        with tqdm(total=total_count, desc="Processed videos") as pbar:
+            for folder in folder_paths:
+                video_paths = [f for f in pathlib.Path(folder).iterdir() if f.is_file() and f.suffix == ".mp4"]
+                for video_path in video_paths:
+                    print("===========================================================================")
+                    print(f"Processing video: {video_path}")
+                    video_mode(
+                        video_path,
+                        image_processor_inst,
+                        find_perclos,
+                        find_yawn,
+                        find_face_tilt,
+                        random_forest_classifier,
+                        validation_output_folder,
+                        pbar
+                    )
+                    if pbar:
+                        pbar.update(1)
+                    processed_count += 1
+                    print(f"Processing complete. Progress: {processed_count/total_count*100}%, videos done: {processed_count}/{total_count}")
+                    print("===========================================================================")
 
 try:
     main()
