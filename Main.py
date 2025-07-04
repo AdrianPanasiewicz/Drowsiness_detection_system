@@ -130,11 +130,12 @@ def video_mode(video_path, image_processor_inst, perclos_finder_inst,
     if mode == "evaluation":
         filename = re.search(r'([^\\]+)\.mp4$', video_path).group(1) + ".csv"
     elif mode =="training":
-        match = re.search(r'\\(\d+)\\.*\\([^\\]+)\.avi$', video_path)
+        match = re.search(r'\\(\d+)\\([^\\]+)\\([^\\]+)\.avi$', video_path)
         if match:
             number = match.group(1)
-            filename = match.group(2)
-            filename = f"{number}_{filename}.csv"
+            type = match.group(2)
+            filename = match.group(3)
+            filename = f"{number}_{type}_{filename}.csv"
         else:
             raise FileNotFoundError
 
