@@ -309,7 +309,7 @@ def main():
             random_forest_classifier
         )
     elif mode == 'video':
-        processing_mode = "training"
+        processing_mode = "apply_drowsiness"
 
         training_folder = pathlib.Path(
             r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Training Dataset")
@@ -404,6 +404,55 @@ def main():
                             processed_count += 1
 
             print("Processing complete!")
+
+        elif processing_mode == "apply_drowsiness":
+
+            training_folder = pathlib.Path(
+                r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Training Dataset")
+            validation_folder = pathlib.Path(
+                r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Evaluation Dataset")
+
+            training_output_folder = pathlib.Path(
+                r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Processed_dataset\Training")
+            validation_output_folder = pathlib.Path(
+                r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Processed_dataset\Validation")
+
+            csv_files_path = [f for f in
+                           pathlib.Path(training_output_folder).iterdir()
+                           if
+                           f.is_file() and f.suffix == ".csv"]
+
+            for i, csv_file in enumerate(csv_files_path,1):
+                match = re.search(r"(\d+)_([^_]+(?:_[^_]+)*)_([^_]+)\.csv$", str(csv_file.name))
+                if match:
+                    person = match.group(1)
+                    type = match.group(2)
+                    attempt = match.group(3)
+                    path = fr"{person}\{type}\{person}_{attempt}_drowsiness.txt"
+                    full_path = training_folder / path
+
+                    with open(full_path, 'r') as txt_file:
+                        drowsiness_data = txt_file.read().strip()
+
+
+                    df = pd.read_csv(csv_file)
+
+                    if len(drowsiness_data) > len(df['Drowsy']):
+                        drowsiness_data = drowsiness_data[:len(df['Drowsy'])]
+                        print(f"txt data has more rows than csv file for file {full_path}")
+                    elif len(drowsiness_data) < len(df['Drowsy']):
+                        drowsiness_data += "0"*(len(df['Drowsy'])-len(drowsiness_data))
+                        print(
+                            f"txt data has less rows than csv file for file {full_path}")
+
+                    df['Drowsy'] = [int(x) for x in
+                                    drowsiness_data]
+
+                    df.to_csv(csv_file, index=False)
+
+                    print(f"Done: {i}\{len(csv_files_path)}")
+
+
 try:
     main()
 except Exception as exc:
