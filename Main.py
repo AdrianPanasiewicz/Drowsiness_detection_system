@@ -120,14 +120,17 @@ def image_mode(image_folder, image_processor_inst, sql_saver_inst, perclos_finde
     print(f"Przetwarzanie zakończone. Wyniki zapisane w {sql_saver_inst.saving_path}")
 
 def video_mode(video_path, image_processor_inst, perclos_finder_inst,
-               yawn_finder_inst, face_angle_finder_inst, random_forest_classifier, output_folder, pbar=None):
+               yawn_finder_inst, face_angle_finder_inst, random_forest_classifier, output_folder, mode):
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Error opening video file: {video_path}")
         return
     video_path  = str(video_path)
-    filename = re.search(r'([^\\]+)\.mp4$', video_path).group(1) + ".csv"
+    if mode == "evaluation":
+        filename = re.search(r'([^\\]+)\.mp4$', video_path).group(1) + ".csv"
+    elif mode =="training":
+        filename = re.search(r'([^\\]+)\.avi$', video_path).group(1) + ".csv"
 
     data_save_inst = DataSaver(
         filename, save_path=output_folder)
@@ -295,6 +298,7 @@ def main():
             random_forest_classifier
         )
     elif mode == 'video':
+        processing_mode = "training"
 
         training_folder = pathlib.Path(
             r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD\Training Dataset")
@@ -316,37 +320,79 @@ def main():
             print(f"Podany folder z obrazami nie istnieje lub nie jest katalogiem: {image_folder}")
             sys.exit(1)
 
-        folder_paths = [f for f in pathlib.Path(validation_folder).iterdir() if f.is_dir()]
         total_count = 0
         processed_count = 0
 
-        for folder in folder_paths:
-            video_paths = [f for f in pathlib.Path(folder).iterdir() if f.is_file() and f.suffix == ".mp4"]
-            total_count += len(video_paths)
+        if processing_mode == "evaluation":
 
+            folder_paths = [f for f in pathlib.Path(
+                validation_folder).iterdir() if f.is_dir()]
 
-        with tqdm(total=total_count, desc="Processed videos") as pbar:
             for folder in folder_paths:
-                video_paths = [f for f in pathlib.Path(folder).iterdir() if f.is_file() and f.suffix == ".mp4"]
-                for video_path in video_paths:
-                    # print("===========================================================================")
-                    print(f"Processing video: {video_path}")
-                    video_mode(
-                        video_path,
-                        image_processor_inst,
-                        find_perclos,
-                        find_yawn,
-                        find_face_tilt,
-                        random_forest_classifier,
-                        validation_output_folder,
-                        pbar
-                    )
-                    if pbar:
-                        pbar.update(1)
-                    processed_count += 1
-                    # print(f"Processing complete. Progress: {processed_count/total_count*100}%, videos done: {processed_count}/{total_count}")
-                    # print("===========================================================================")
+                video_paths = [f for f in pathlib.Path(
+                    folder).iterdir() if
+                               f.is_file() and f.suffix == ".mp4"]
+                total_count += len(video_paths)
 
+            with tqdm(total=total_count, desc="Processed videos") as pbar:
+                for folder in folder_paths:
+                    video_paths = [f for f in pathlib.Path(folder).iterdir() if f.is_file() and f.suffix == ".mp4"]
+                    for video_path in video_paths:
+                        # print("===========================================================================")
+                        print(f"Processing video: {video_path}")
+                        video_mode(
+                            video_path,
+                            image_processor_inst,
+                            find_perclos,
+                            find_yawn,
+                            find_face_tilt,
+                            random_forest_classifier,
+                            validation_output_folder,
+                            processing_mode
+                        )
+                        if pbar:
+                            pbar.update(1)
+                        processed_count += 1
+            print("Processing complete!")
+
+        elif processing_mode == "training":
+
+            folder_paths = [f for f in pathlib.Path(
+                training_folder).iterdir() if f.is_dir()]
+
+            for folder in folder_paths:
+                subfolder_paths = [f for f in pathlib.Path(
+                    folder).iterdir() if
+                               f.is_dir()]
+                for subfolder in subfolder_paths:
+                    video_paths = [f for f in pathlib.Path(
+                        subfolder).iterdir() if
+                                   f.is_file() and f.suffix == ".avi"]
+                    total_count += len(video_paths)
+
+            with tqdm(total=total_count, desc="Processed videos") as pbar:
+                for folder in folder_paths:
+                    subfolder_paths = [f for f in pathlib.Path(folder).iterdir() if f.is_dir()]
+                    for subfolder in subfolder_paths:
+                        video_paths = [f for f in pathlib.Path(subfolder).iterdir()if f.is_file() and f.suffix == ".avi"]
+                        for video_path in video_paths:
+                            # print("===========================================================================")
+                            print(f"Processing video: {video_path}")
+                            video_mode(
+                                video_path,
+                                image_processor_inst,
+                                find_perclos,
+                                find_yawn,
+                                find_face_tilt,
+                                random_forest_classifier,
+                                training_output_folder,
+                                processing_mode
+                            )
+                            if pbar:
+                                pbar.update(1)
+                            processed_count += 1
+
+            print("Processing complete!")
 try:
     main()
 except Exception as exc:
