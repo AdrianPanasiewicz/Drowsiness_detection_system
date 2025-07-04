@@ -130,7 +130,13 @@ def video_mode(video_path, image_processor_inst, perclos_finder_inst,
     if mode == "evaluation":
         filename = re.search(r'([^\\]+)\.mp4$', video_path).group(1) + ".csv"
     elif mode =="training":
-        filename = re.search(r'([^\\]+)\.avi$', video_path).group(1) + ".csv"
+        match = re.search(r'\\(\d+)\\.*\\([^\\]+)\.avi$', video_path)
+        if match:
+            number = match.group(1)
+            filename = match.group(2)
+            filename = f"{number}_{filename}.csv"
+        else:
+            raise FileNotFoundError
 
     data_save_inst = DataSaver(
         filename, save_path=output_folder)
@@ -339,7 +345,7 @@ def main():
                     video_paths = [f for f in pathlib.Path(folder).iterdir() if f.is_file() and f.suffix == ".mp4"]
                     for video_path in video_paths:
                         # print("===========================================================================")
-                        print(f"Processing video: {video_path}")
+                        print(f"\nProcessing video: {video_path}")
                         video_mode(
                             video_path,
                             image_processor_inst,
@@ -377,7 +383,7 @@ def main():
                         video_paths = [f for f in pathlib.Path(subfolder).iterdir()if f.is_file() and f.suffix == ".avi"]
                         for video_path in video_paths:
                             # print("===========================================================================")
-                            print(f"Processing video: {video_path}")
+                            print(f"\nProcessing video: {video_path}")
                             video_mode(
                                 video_path,
                                 image_processor_inst,
