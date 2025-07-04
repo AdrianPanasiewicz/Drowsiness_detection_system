@@ -24,6 +24,9 @@ class PerclosFinder(ParamFinder):
         self.previous_perclos: float = 0.0
         self.perclos_threshold: float = perclos_threshold
 
+    def reset_memory(self):
+        self.previous_perclos = 0.0
+
     def find_parameter(self, face_coords: Any) -> Tuple[float, float]:
         """
         Oblicza dwa parametry związane z oczami:

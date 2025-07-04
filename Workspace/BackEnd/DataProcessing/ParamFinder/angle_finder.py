@@ -19,6 +19,10 @@ class AngleFinder(ParamFinder):
         self.roll_memory = np.array(np.zeros(roll_memory_size))
         self.pitch_memory = np.array(np.zeros(pitch_memory_size))
 
+    def reset_memory(self):
+        self.roll_memory = np.array(np.zeros(len(self.roll_memory)))
+        self.pitch_memory = np.array(np.zeros(len(self.pitch_memory)))
+
     def find_parameter(self, face_coords: Any) -> Tuple[float, float]:
         """
         Główna metoda interfejsu ParamFinder. Zwraca kąt przechylenia (roll)

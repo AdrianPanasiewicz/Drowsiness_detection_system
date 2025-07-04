@@ -26,6 +26,9 @@ class YawnFinder(ParamFinder):
             self.yawn_memory = np.zeros(10, dtype=bool)
         self.yawn_threshold = yawn_threshold
 
+    def reset_memory(self):
+        self.yawn_memory = np.zeros(len(self.yawn_memory), dtype=bool)
+
     def find_parameter(self, face_coords) -> tuple:
         """
         Główna metoda interfejsu ParamFinder. Zwraca informację,

@@ -147,6 +147,10 @@ def video_mode(video_path, image_processor_inst, perclos_finder_inst,
     fps = cap.get(cv2.CAP_PROP_FPS)
     update_freq = int(total_frames * 0.05)
 
+    perclos_finder_inst.reset_memory()
+    yawn_finder_inst.reset_memory()
+    face_angle_finder_inst.reset_memory()
+
     with tqdm(total=total_frames, desc="Processed frames") as pbar_video:
         while True:
             ret, frame = cap.read()
