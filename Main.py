@@ -127,7 +127,7 @@ def video_mode(video_path, image_processor_inst, perclos_finder_inst,
         print(f"Error opening video file: {video_path}")
         return
     video_path  = str(video_path)
-    filename = re.search(r'([^\\]+)\.mp4$', video_path).group(1) + ".xlsx"
+    filename = re.search(r'([^\\]+)\.mp4$', video_path).group(1) + ".csv"
 
     data_save_inst = DataSaver(
         filename, save_path=output_folder)
@@ -135,6 +135,7 @@ def video_mode(video_path, image_processor_inst, perclos_finder_inst,
     total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     frame_count = 0
     fps = cap.get(cv2.CAP_PROP_FPS)
+    update_freq = int(total_frames * 0.05)
 
     with tqdm(total=total_frames, desc="Processed frames") as pbar_video:
         while True:
@@ -171,17 +172,17 @@ def video_mode(video_path, image_processor_inst, perclos_finder_inst,
                     "Drowsy": prediction
                 }
 
-                data_save_inst.save_to_excel(packet)
+                data_save_inst.add_to_batch(packet)
 
-            refresh_tempo = 50
-            if frame_count % refresh_tempo == 0:
+            if frame_count % update_freq == 0:
                 if pbar_video:
-                    pbar_video.update(refresh_tempo)
-                    if pbar:
-                        pbar.refresh()
-                    pbar_video.refresh()
+                    pbar_video.update(update_freq)
+                    # if pbar:
+                    #     pbar.refresh()
+                    # pbar_video.refresh()
+
     cap.release()
-    os.system('cls' if os.name == 'nt' else 'clear')
+    data_save_inst.flush_batch()
     # print(f"Processing complete. Total frames: {frame_count}")
     # print(f"Results saved to {data_save_inst.saving_path}")
 
@@ -328,7 +329,7 @@ def main():
             for folder in folder_paths:
                 video_paths = [f for f in pathlib.Path(folder).iterdir() if f.is_file() and f.suffix == ".mp4"]
                 for video_path in video_paths:
-                    print("===========================================================================")
+                    # print("===========================================================================")
                     print(f"Processing video: {video_path}")
                     video_mode(
                         video_path,
@@ -343,8 +344,8 @@ def main():
                     if pbar:
                         pbar.update(1)
                     processed_count += 1
-                    print(f"Processing complete. Progress: {processed_count/total_count*100}%, videos done: {processed_count}/{total_count}")
-                    print("===========================================================================")
+                    # print(f"Processing complete. Progress: {processed_count/total_count*100}%, videos done: {processed_count}/{total_count}")
+                    # print("===========================================================================")
 
 try:
     main()
