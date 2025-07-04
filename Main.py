@@ -177,7 +177,6 @@ def video_mode(video_path, image_processor_inst, perclos_finder_inst,
             if frame_count % refresh_tempo == 0:
                 if pbar_video:
                     pbar_video.update(refresh_tempo)
-                    print("\n")
                     if pbar:
                         pbar.refresh()
                     pbar_video.refresh()
