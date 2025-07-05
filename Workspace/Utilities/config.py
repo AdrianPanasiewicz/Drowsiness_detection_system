@@ -26,3 +26,6 @@ class Config:
         # Thresholds
         self.perclos_threshold = 0.3
         self.yawn_threshold = 0.5
+
+        # Dataset options
+        self.sequence_length = 64
