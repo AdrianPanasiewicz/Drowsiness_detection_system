@@ -5,13 +5,13 @@ from Workspace.Utilities.utils import Utils
 
 class CameraMode:
     def __init__(self, camera, image_processor,
-                 coordinates_parser, sql_saver,
+                 coordinates_parser, data_saver,
                  perclos_finder, yawn_finder,
                  face_tilt_finder, classifier, gui=None):
         self.camera = camera
         self.image_processor = image_processor
         self.coordinates_parser = coordinates_parser
-        self.sql_saver = sql_saver
+        self.data_saver = data_saver
         self.perclos_finder = perclos_finder
         self.yawn_finder = yawn_finder
         self.face_tilt_finder = face_tilt_finder
@@ -59,7 +59,7 @@ class CameraMode:
                 "Obecna sennosc": prediction,
                 "FPS": fps
             }
-            self.sql_saver.save_to_csv(packet)
+            self.data_saver.save_to_csv(packet)
 
     def _calculate_prediction(self, face_mesh_coords,
                               perclos, mar, ear, roll,

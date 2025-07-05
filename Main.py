@@ -23,12 +23,12 @@ def main():
         if not camera.isOpened():
             raise IOError("Camera access failed")
 
-        sql_saver = DataSaver(cfg.results_name)
+        data_saver = DataSaver(cfg.results_name)
         gui = GUI()
 
         camera_mode = CameraMode(
             camera, image_processor, coordinates_parser,
-            sql_saver,
+            data_saver,
             perclos_finder, yawn_finder, face_angle_finder,
             classifier, gui
         )
@@ -55,7 +55,7 @@ def main():
         )
 
         for folder, saver in folders:
-            image_mode.sql_saver = saver
+            image_mode.data_saver = saver
             image_mode.process_folder(folder)
 
         print(f"Processing complete. Results saved")
@@ -89,6 +89,18 @@ def main():
                 cfg.training_folder,
                 cfg.output_folder / "Training")
             applier.apply_labels()
+
+    elif cfg.mode == 'dataset':
+        training_folder = cfg.output_folder / "Training"
+        validation_folder = cfg.output_folder / "Validation"
+
+        training_data_saver = DataSaver("processed_training_dataset.csv", training_folder)
+        validation_data_saver = DataSaver("processed_validation_dataset.csv", validation_folder)
+
+        training_dataset_creator = DatasetCreator(training_data_saver, load_folder=training_folder, save_folder=(training_folder / "Processed"))
+        validation_dataset_creator = DatasetCreator(validation_data_saver, load_folder=validation_folder, save_folder=validation_folder / "Processed")
+
+        training_dataset_creator.load_data()
 
 
 if __name__ == "__main__":

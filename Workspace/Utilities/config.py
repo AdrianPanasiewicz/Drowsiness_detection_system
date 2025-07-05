@@ -2,12 +2,12 @@ import pathlib
 
 
 class Config:
-    MODES = ["camera", "image", "video"]
+    MODES = ["camera", "image", "video", "dataset"]
     PROCESSING_MODES = ["training", "evaluation",
                         "apply_drowsiness"]
 
     def __init__(self):
-        self.mode = "video"
+        self.mode = "dataset"
         self.processing_mode = "apply_drowsiness"
 
         # Path configuration

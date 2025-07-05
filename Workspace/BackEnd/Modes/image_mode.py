@@ -5,12 +5,12 @@ import pathlib
 
 
 class ImageMode:
-    def __init__(self, image_processor, sql_saver,
+    def __init__(self, image_processor, data_saver,
                  perclos_finder,
                  yawn_finder, face_angle_finder,
                  classifier):
         self.image_processor = image_processor
-        self.sql_saver = sql_saver
+        self.data_saver = data_saver
         self.perclos_finder = perclos_finder
         self.yawn_finder = yawn_finder
         self.face_angle_finder = face_angle_finder
@@ -60,7 +60,7 @@ class ImageMode:
             "EAR": ear,
             "Obecna_sennosc": drowsiness_label
         }
-        self.sql_saver.save_to_csv(packet)
+        self.data_saver.save_to_csv(packet)
 
     def _calculate_prediction(self, perclos, mar, ear, roll,
                               pitch):
