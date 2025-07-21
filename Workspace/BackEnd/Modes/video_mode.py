@@ -120,11 +120,11 @@ class VideoProcessor:
 
 
 class DrowsinessLabelApplier:
-    def __init__(self, source_folder, output_folder):
-        self.source_folder = Path(source_folder)
+    def __init__(self, label_source, output_folder):
+        self.label_source = Path(label_source)
         self.output_folder = Path(output_folder)
 
-    def apply_labels(self):
+    def apply_labels_from_folders(self):
         csv_files = list(self.output_folder.glob('*.csv'))
 
         for i, csv_file in enumerate(csv_files, 1):
@@ -134,14 +134,34 @@ class DrowsinessLabelApplier:
             if not match:
                 continue
 
-            txt_path = self.source_folder / match.group(
+            txt_path = self.label_source / match.group(
                 1) / match.group(
                 2) / f"{match.group(1)}_{match.group(3)}_drowsiness.txt"
-            self._apply_label_to_csv(csv_file, txt_path, i,
-                                     len(csv_files))
+            self._apply_label_from_txt(csv_file, txt_path)
+            print(f"Processed {i}/{len(csv_files)}: {csv_file.name}")
 
-    def _apply_label_to_csv(self, csv_file, txt_path,
-                            current, total):
+    def apply_labels_from_txt_matrix(self):
+        kss_file = open(self.label_source)
+        labels = kss_file.read().split()
+        # Access it by (x-1)*3 + (y-1)
+        csv_files = list(self.output_folder.glob('*.csv'))
+
+        for i,file in enumerate(csv_files,1):
+            numbers = list(map(int, re.findall(r'\d+', file.name)))
+            index = (numbers[0]-1)*3 + numbers[1] - 1
+            kss_scale = int(labels[index])
+            if kss_scale > 5:
+                drowsiness_label = 1
+            else:
+                drowsiness_label = 0
+
+            df = pd.read_csv(file)
+            df['Drowsy'] = drowsiness_label
+            df.drop('PERCLOS', axis=1, inplace=True)
+            df.to_csv(file, index=False)
+            print(f"Processed {i}/{len(csv_files)}: {file.name}")
+
+    def _apply_label_from_txt(self, csv_file, txt_path):
         try:
             with open(txt_path, 'r') as f:
                 drowsiness_data = f.read().strip()
@@ -156,5 +176,3 @@ class DrowsinessLabelApplier:
         df['Drowsy'] = list(map(int, drowsiness_data.ljust(
             len(df), '0')[:len(df)]))
         df.to_csv(csv_file, index=False)
-        print(
-            f"Processed {current}/{total}: {csv_file.name}")

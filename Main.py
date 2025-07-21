@@ -88,28 +88,52 @@ def main():
                     pbar.update(1)
 
         elif cfg.processing_mode == "apply_drowsiness":
-            applier = DrowsinessLabelApplier(
-                cfg.training_folder,
-                cfg.output_folder / "Training")
-            applier.apply_labels()
+            if cfg.dataset == 'nthuddd':
+                applier = DrowsinessLabelApplier(
+                    cfg.training_folder,
+                    cfg.output_folder / "Training")
+                applier.apply_labels_from_folders()
+
+            elif cfg.dataset == 'drozy':
+                path = pathlib.Path(r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\DROZY\DROZY\DROZY\KSS.txt")
+                training_applier = DrowsinessLabelApplier(
+                    path,
+                    cfg.output_folder / "Training")
+                training_applier.apply_labels_from_txt_matrix()
+
+                evaluation_applier = DrowsinessLabelApplier(
+                    path,
+                    cfg.output_folder / "Validation")
+                evaluation_applier.apply_labels_from_txt_matrix()
+
 
     elif cfg.mode == 'dataset':
         training_folder = cfg.output_folder / "Training"
         validation_folder = cfg.output_folder / "Validation"
         sequence_data_folder = cfg.output_folder / "Sequenced_data"
 
-        training_save_path = sequence_data_folder / f"train_dataset_seq_{cfg.sequence_length}.csv"
-        validation_save_path = sequence_data_folder / f"val_dataset_seq_{cfg.sequence_length}.csv"
 
-        training_dataset_creator = DatasetCreator(load_folder=training_folder, save_path=training_save_path)
-        validation_dataset_creator = DatasetCreator(load_folder=validation_folder, save_path=validation_save_path)
 
-        training_dataset_creator.process_data(cfg.sequence_length)
-        validation_dataset_creator.process_data(cfg.sequence_length)
+        for i in range(5, 11):
+            seq_length = 2 ** i
 
-        print(F"Datasets created with sequence length of {cfg.sequence_length} at: \n"
-              F"Training_dataset: {training_save_path} \n"
-              F"Validation_dataset: {validation_save_path}")
+            training_save_path = sequence_data_folder / f"train_drozy_seq_{seq_length}.csv"
+            validation_save_path = sequence_data_folder / f"val_drozy_seq_{seq_length}.csv"
+
+            training_dataset_creator = DatasetCreator(
+                load_folder=training_folder,
+                save_path=training_save_path)
+            validation_dataset_creator = DatasetCreator(
+                load_folder=validation_folder,
+                save_path=validation_save_path)
+
+            training_dataset_creator.process_data(seq_length)
+            validation_dataset_creator.process_data(seq_length)
+
+            print(F"Datasets created with sequence length of {seq_length} at: \n"
+                  F"Training_dataset: {training_save_path} \n"
+                  F"Validation_dataset: {validation_save_path}")
+
 
 if __name__ == "__main__":
     try:

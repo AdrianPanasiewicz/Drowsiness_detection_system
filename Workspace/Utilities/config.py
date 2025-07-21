@@ -2,15 +2,15 @@ import pathlib
 
 
 class Config:
+    DATASETS = ["nthuddd", "drozy"]
     MODES = ["camera", "image", "video", "dataset"]
     PROCESSING_MODES = ["training", "evaluation",
                         "apply_drowsiness"]
-    DATASETS = ["nthuddd", "drozy"]
 
     def __init__(self):
         self.dataset = "drozy"
-        self.mode = "video"
-        self.processing_mode = "training"
+        self.mode = "dataset"
+        self.processing_mode = "apply_drowsiness"
 
         # Path configuration
         if self.dataset == "nthuddd":
@@ -32,6 +32,3 @@ class Config:
         # Thresholds
         self.perclos_threshold = 0.3
         self.yawn_threshold = 0.5
-
-        # Dataset options
-        self.sequence_length = 1024
