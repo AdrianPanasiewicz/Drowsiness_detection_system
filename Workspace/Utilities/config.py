@@ -5,14 +5,20 @@ class Config:
     MODES = ["camera", "image", "video", "dataset"]
     PROCESSING_MODES = ["training", "evaluation",
                         "apply_drowsiness"]
+    DATASETS = ["nthuddd", "drozy"]
 
     def __init__(self):
-        self.mode = "dataset"
-        self.processing_mode = "apply_drowsiness"
+        self.dataset = "drozy"
+        self.mode = "video"
+        self.processing_mode = "training"
 
         # Path configuration
-        self.base_path = pathlib.Path(
-            r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD")
+        if self.dataset == "nthuddd":
+            self.base_path = pathlib.Path(
+                r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\NTHUDDD")
+        elif self.dataset == "drozy":
+            self.base_path = pathlib.Path(
+                r"E:\Zycie\Nauka\Studia\Dod\Artykuł naukowy TCNN\DROZY\DROZY\DROZY\videos_i8")
         self.training_folder = self.base_path / "Training Dataset"
         self.validation_folder = self.base_path / "Evaluation Dataset"
         self.output_folder = self.base_path / "Processed_dataset"
@@ -28,4 +34,4 @@ class Config:
         self.yawn_threshold = 0.5
 
         # Dataset options
-        self.sequence_length = 64
+        self.sequence_length = 1024

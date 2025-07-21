@@ -76,13 +76,16 @@ def main():
             videos = [f for f in folder.rglob('*') if
                       f.is_file() and f.suffix in ['.mp4',
                                                    '.avi']]
-
-            for video in videos:
-                print(f"Processing: {video.name}")
-                save_path = processor.process_video(video,
-                                                    output,
-                                                    cfg.processing_mode)
-                print(f"Saved to: {save_path}")
+            with tqdm(total=len(videos),
+                      desc="Processing videos") as pbar:
+                for video in videos:
+                    print(f"Processing: {video.name}")
+                    save_path = processor.process_video(video,
+                                                        output,
+                                                        cfg.processing_mode,
+                                                        cfg.dataset)
+                    # print(f"Saved to: {save_path}")
+                    pbar.update(1)
 
         elif cfg.processing_mode == "apply_drowsiness":
             applier = DrowsinessLabelApplier(

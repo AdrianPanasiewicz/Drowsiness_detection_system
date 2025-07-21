@@ -17,13 +17,13 @@ class VideoProcessor:
         self.classifier = classifier
 
     def process_video(self, video_path, output_folder,
-                      mode):
+                      mode, dataset):
         cap = cv2.VideoCapture(str(video_path))
         if not cap.isOpened():
             raise IOError(
                 f"Error opening video: {video_path}")
 
-        filename = self._generate_filename(video_path, mode)
+        filename = self._generate_filename(video_path, mode, dataset)
         data_saver = DataSaver(filename,
                                save_path=output_folder)
 
@@ -42,7 +42,8 @@ class VideoProcessor:
 
                 self._process_frame(frame, frame_count, fps,
                                     data_saver)
-                pbar.update(1)
+                if frame_count % 1000 == 0:
+                    pbar.update(1000)
 
         cap.release()
         data_saver.flush_batch()
@@ -91,18 +92,26 @@ class VideoProcessor:
                 data)
         return False
 
-    def _generate_filename(self, video_path, mode):
+    def _generate_filename(self, video_path, mode, dataset):
         video_path = str(video_path)
-        if mode == "evaluation":
+        if dataset == "nthuddd":
+            if mode == "evaluation":
+                return re.search(r'([^\\]+)\.mp4$',
+                                 video_path).group(1) + ".csv"
+            elif mode == "training":
+                match = re.search(
+                    r'\\(\d+)\\([^\\]+)\\([^\\]+)\.avi$',
+                    video_path)
+                if match:
+                    return f"{match.group(1)}_{match.group(2)}_{match.group(3)}.csv"
+            else:
+                raise ValueError("Invalid video mode")
+
+        if dataset == "drozy":
             return re.search(r'([^\\]+)\.mp4$',
                              video_path).group(1) + ".csv"
-        elif mode == "training":
-            match = re.search(
-                r'\\(\d+)\\([^\\]+)\\([^\\]+)\.avi$',
-                video_path)
-            if match:
-                return f"{match.group(1)}_{match.group(2)}_{match.group(3)}.csv"
-        raise ValueError("Invalid video mode")
+        else:
+            raise ValueError("Invalid dataset")
 
     def _reset_finders(self):
         self.perclos_finder.reset_memory()
