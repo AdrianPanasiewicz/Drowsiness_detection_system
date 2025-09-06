@@ -84,7 +84,7 @@ def main():
                                                         output,
                                                         cfg.processing_mode,
                                                         cfg.dataset)
-                    # print(f"Saved to: {save_path}")
+                    # print(f"Saved to5: {save_path}")
                     pbar.update(1)
 
         elif cfg.processing_mode == "apply_drowsiness":
@@ -114,7 +114,7 @@ def main():
 
 
 
-        for i in range(5, 11):
+        for i in range(0, 7):
             seq_length = 2 ** i
 
             training_save_path = sequence_data_folder / f"train_drozy_seq_{seq_length}.csv"

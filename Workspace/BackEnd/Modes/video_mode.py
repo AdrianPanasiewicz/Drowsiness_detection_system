@@ -157,7 +157,7 @@ class DrowsinessLabelApplier:
 
             df = pd.read_csv(file)
             df['Drowsy'] = drowsiness_label
-            df.drop('PERCLOS', axis=1, inplace=True)
+            # df.drop('PERCLOS', axis=1, inplace=True)
             df.to_csv(file, index=False)
             print(f"Processed {i}/{len(csv_files)}: {file.name}")
 

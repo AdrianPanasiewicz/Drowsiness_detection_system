@@ -1,6 +1,8 @@
 import pandas as pd
 import math
 
+from tqdm import tqdm
+
 
 class DatasetCreator:
     default_name = "results.csv"
@@ -17,14 +19,13 @@ class DatasetCreator:
 
         processed_data = pd.DataFrame()
 
-        for csv in all_csv_files:
+        for csv in tqdm(all_csv_files, desc="Processing CSVs"):
             loaded_data = pd.read_csv(csv)
             sequences = self.create_sequences_from_data(sequence_length, loaded_data)
-            processed_data = pd.concat([processed_data,sequences], ignore_index=True)
+            processed_data = pd.concat([processed_data, sequences], ignore_index=True)
 
         if self.save_path.exists():
-            processed_data.to_csv(self.save_path, mode='a',
-                      header=False, index=False)
+            processed_data.to_csv(self.save_path, mode='a', header=False, index=False)
         else:
             processed_data.to_csv(self.save_path, index=False)
 
